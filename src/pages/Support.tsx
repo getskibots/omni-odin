@@ -4,6 +4,7 @@ import {
   type AttentionFlag,
   type Channel,
   type Conversation,
+  type Message,
 } from '../data/conversations';
 
 type ChannelFilter = 'all' | Channel;
