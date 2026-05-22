@@ -525,7 +525,8 @@ function layerMeta(id: LayerId) {
     case 'parent':
       return {
         title: 'Parent',
-        subtitle: 'Identity, personas, and policies. Inherited by every channel.',
+        subtitle:
+          'Identity, purpose, role, knowledge base, guardrails, fallbacks, and more. Inherited by every channel.',
         hint: 'Channel-specific rules (length, formatting, fallback) live on each channel layer below — not here.',
         placeholder: '',
       };
