@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   X,
   Phone,
+  MessageCircle,
   Play,
   Square,
   Send,
@@ -14,67 +15,84 @@ import {
 } from 'lucide-react';
 import type { VoiceStack } from '../data/parent';
 import {
-  runVoiceTest,
+  runChannelTest,
   speakText,
   stopSpeaking,
   isApiKeyConfigured,
-  detectVoiceViolations,
+  detectViolations,
   type ChatMessage,
+  type TestChannel,
 } from '../lib/voiceTest';
 
 interface UiMessage {
   id: string;
   from: 'bot' | 'user';
   text: string;
-  audioDuration?: string;
   violations?: string[];
 }
 
-const SEED: UiMessage[] = [
-  {
-    id: 'seed-1',
+const SEEDS: Record<TestChannel, UiMessage> = {
+  voice: {
+    id: 'seed-voice',
     from: 'bot',
     text: 'Welcome to Jackson Hole. How can we help today?',
-    audioDuration: '00:04',
   },
-];
+  chat: {
+    id: 'seed-chat',
+    from: 'bot',
+    text: 'Welcome to Jackson Hole! How can I help you today?',
+  },
+};
 
 function id(): string {
   return `m-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+interface Props {
+  open: boolean;
+  onClose: () => void;
+  channel: TestChannel;
+  systemPrompt: string;
+  voiceStack: VoiceStack;
+  chatModel?: string;
+}
+
 export default function TestVoiceModal({
   open,
   onClose,
-  voiceStack,
+  channel,
   systemPrompt,
-}: {
-  open: boolean;
-  onClose: () => void;
-  voiceStack: VoiceStack;
-  systemPrompt: string;
-}) {
-  const [messages, setMessages] = useState<UiMessage[]>(SEED);
+  voiceStack,
+  chatModel,
+}: Props) {
+  const [messages, setMessages] = useState<UiMessage[]>([SEEDS[channel]]);
   const [input, setInput] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const [autoPlay, setAutoPlay] = useState(true);
+  const [autoPlay, setAutoPlay] = useState(channel === 'voice');
   const apiConnected = isApiKeyConfigured();
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const isVoice = channel === 'voice';
+  const ChannelIcon = isVoice ? Phone : MessageCircle;
+  const title = isVoice ? 'Test Voice AI' : 'Test Chat AI';
+  const subtitle = isVoice
+    ? 'Iterate on the Voice prompt without placing a phone call.'
+    : 'Iterate on the Chat prompt without opening the widget.';
+
   useEffect(() => {
     if (open) {
-      // Reset on open
-      setMessages(SEED);
+      setMessages([SEEDS[channel]]);
       setInput('');
       setError(null);
       setPending(false);
       setPlayingId(null);
+      setAutoPlay(channel === 'voice');
     } else {
       stopSpeaking();
     }
-  }, [open]);
+  }, [open, channel]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -97,15 +115,15 @@ export default function TestVoiceModal({
         role: m.from === 'bot' ? 'assistant' : 'user',
         content: m.text,
       }));
-      const reply = await runVoiceTest(systemPrompt, history, voiceStack);
+      const reply = await runChannelTest(systemPrompt, history, channel, voiceStack);
       const botMsg: UiMessage = {
         id: id(),
         from: 'bot',
         text: reply,
-        violations: detectVoiceViolations(reply),
+        violations: detectViolations(reply, channel),
       };
       setMessages((prev) => [...prev, botMsg]);
-      if (autoPlay) {
+      if (isVoice && autoPlay) {
         setPlayingId(botMsg.id);
         speakText(reply, voiceStack.voice);
       }
@@ -127,7 +145,6 @@ export default function TestVoiceModal({
     }
   };
 
-  // Stop "playing" indicator when SpeechSynthesis finishes
   useEffect(() => {
     if (!playingId) return;
     const interval = setInterval(() => {
@@ -147,13 +164,11 @@ export default function TestVoiceModal({
         <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-full bg-botscrew-50 text-botscrew-600 flex items-center justify-center">
-              <Phone className="h-4 w-4" strokeWidth={1.75} />
+              <ChannelIcon className="h-4 w-4" strokeWidth={1.75} />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-ink-900">Test Voice AI</h2>
-              <p className="text-xs text-slate-500">
-                Iterate on the Voice prompt without placing a phone call.
-              </p>
+              <h2 className="text-base font-semibold text-ink-900">{title}</h2>
+              <p className="text-xs text-slate-500">{subtitle}</p>
             </div>
           </div>
           <button
@@ -167,19 +182,27 @@ export default function TestVoiceModal({
         {/* Settings strip */}
         <div className="px-5 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-3 text-xs text-slate-600 flex-wrap">
           <span className="font-medium text-slate-700">Using:</span>
-          <span>Parent + Voice override</span>
+          <span>Parent + {isVoice ? 'Voice' : 'Chat'} override</span>
           <span className="text-slate-300">·</span>
           <span>
-            Model: <code className="font-mono text-ink-900">{voiceStack.model}</code>
+            Model:{' '}
+            <code className="font-mono text-ink-900">
+              {isVoice ? voiceStack.model : (chatModel ?? 'gpt-5.5')}
+            </code>
           </span>
-          <span className="text-slate-300">·</span>
-          <span>
-            Voice: <code className="font-mono text-ink-900">{voiceStack.voice}</code>
-          </span>
-          <span className="text-slate-300">·</span>
-          <span>
-            STT: <code className="font-mono text-ink-900">{voiceStack.transcriptionModel}</code>
-          </span>
+          {isVoice && (
+            <>
+              <span className="text-slate-300">·</span>
+              <span>
+                Voice: <code className="font-mono text-ink-900">{voiceStack.voice}</code>
+              </span>
+              <span className="text-slate-300">·</span>
+              <span>
+                STT:{' '}
+                <code className="font-mono text-ink-900">{voiceStack.transcriptionModel}</code>
+              </span>
+            </>
+          )}
           <span className="ml-auto inline-flex items-center gap-1.5">
             {apiConnected ? (
               <>
@@ -201,6 +224,7 @@ export default function TestVoiceModal({
             <MessageBubble
               key={m.id}
               message={m}
+              isVoice={isVoice}
               playing={playingId === m.id}
               onTogglePlay={() => togglePlay(m)}
             />
@@ -226,22 +250,28 @@ export default function TestVoiceModal({
             <Info className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
             <span>
               Mock mode — set <code className="font-mono">VITE_OPENAI_API_KEY</code> in{' '}
-              <code className="font-mono">.env.local</code> for live LLM responses. TTS uses your
-              browser's voice (real <code className="font-mono">{voiceStack.voice}</code> ships with
-              backend wiring).
+              <code className="font-mono">.env.local</code> for live LLM responses.
+              {isVoice && (
+                <>
+                  {' '}TTS uses your browser's voice (real{' '}
+                  <code className="font-mono">{voiceStack.voice}</code> ships with backend wiring).
+                </>
+              )}
             </span>
           </div>
         )}
 
         {/* Input */}
         <div className="px-5 py-3 border-t border-slate-200 flex items-center gap-2">
-          <button
-            disabled
-            className="h-9 w-9 shrink-0 rounded-md border border-slate-200 text-slate-400 flex items-center justify-center"
-            title="Hold to talk (coming with backend)"
-          >
-            <Mic className="h-4 w-4" strokeWidth={1.75} />
-          </button>
+          {isVoice && (
+            <button
+              disabled
+              className="h-9 w-9 shrink-0 rounded-md border border-slate-200 text-slate-400 flex items-center justify-center"
+              title="Hold to talk (coming with backend)"
+            >
+              <Mic className="h-4 w-4" strokeWidth={1.75} />
+            </button>
+          )}
           <input
             type="text"
             value={input}
@@ -254,19 +284,25 @@ export default function TestVoiceModal({
             }}
             disabled={pending}
             placeholder={
-              pending ? 'Waiting on response…' : 'Type a question (try: snow report, tickets, lessons)'
+              pending
+                ? 'Waiting on response…'
+                : isVoice
+                  ? 'Type a question (try: snow report, tickets, lessons)'
+                  : 'Type a message (try: lift tickets, lessons, lodging)'
             }
             className="flex-1 text-sm px-3 py-2 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400 disabled:opacity-50"
           />
-          <label className="inline-flex items-center gap-1.5 text-xs text-slate-500 select-none cursor-pointer">
-            <input
-              type="checkbox"
-              checked={autoPlay}
-              onChange={(e) => setAutoPlay(e.target.checked)}
-              className="rounded border-slate-300"
-            />
-            Auto-play
-          </label>
+          {isVoice && (
+            <label className="inline-flex items-center gap-1.5 text-xs text-slate-500 select-none cursor-pointer">
+              <input
+                type="checkbox"
+                checked={autoPlay}
+                onChange={(e) => setAutoPlay(e.target.checked)}
+                className="rounded border-slate-300"
+              />
+              Auto-play
+            </label>
+          )}
           <button
             onClick={send}
             disabled={!input.trim() || pending}
@@ -282,10 +318,12 @@ export default function TestVoiceModal({
 
 function MessageBubble({
   message,
+  isVoice,
   playing,
   onTogglePlay,
 }: {
   message: UiMessage;
+  isVoice: boolean;
   playing: boolean;
   onTogglePlay: () => void;
 }) {
@@ -301,7 +339,7 @@ function MessageBubble({
           }`}
         >
           <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</div>
-          {isBot && (
+          {isBot && isVoice && (
             <div className="mt-2 flex items-center gap-2 pt-2 border-t border-slate-100">
               <button
                 onClick={onTogglePlay}

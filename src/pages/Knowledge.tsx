@@ -10,7 +10,7 @@ import type { LayerId, VoiceStack } from '../data/parent';
 import { LayerIcon } from '../components/LayerIcon';
 import TemplateForm from '../components/TemplateForm';
 import TestVoiceModal from '../components/TestVoiceModal';
-import { ChevronsRight, Phone } from 'lucide-react';
+import { ChevronsRight, Phone, MessageCircle } from 'lucide-react';
 
 type KnowledgeSection = 'instructions' | 'text-edits' | 'files' | 'website';
 
@@ -109,7 +109,7 @@ function Instructions() {
   );
   const [activeLayer, setActiveLayer] = useState<LayerId>('parent');
   const [parentSubTab, setParentSubTab] = useState<'template' | 'customization'>('template');
-  const [testVoiceOpen, setTestVoiceOpen] = useState(false);
+  const [testChannel, setTestChannel] = useState<'chat' | 'voice' | null>(null);
 
   const layers = useMemo(
     () => ({
@@ -154,14 +154,21 @@ function Instructions() {
         onParentModel={setModel}
         voiceStack={voiceStack}
         onVoiceStack={setVoiceStack}
-        onTestVoice={() => setTestVoiceOpen(true)}
+        onTestVoice={() => setTestChannel('voice')}
+        onTestChat={() => setTestChannel('chat')}
       />
 
       <TestVoiceModal
-        open={testVoiceOpen}
-        onClose={() => setTestVoiceOpen(false)}
+        open={testChannel !== null}
+        onClose={() => setTestChannel(null)}
+        channel={testChannel ?? 'voice'}
         voiceStack={voiceStack}
-        systemPrompt={`${parentPrompt}\n\n---\n\n${voicePrompt}`}
+        chatModel={model}
+        systemPrompt={
+          testChannel === 'chat'
+            ? `${parentPrompt}\n\n---\n\n${chatPrompt}`
+            : `${parentPrompt}\n\n---\n\n${voicePrompt}`
+        }
       />
 
       <div>
@@ -266,6 +273,7 @@ function ModelRow({
   voiceStack,
   onVoiceStack,
   onTestVoice,
+  onTestChat,
 }: {
   activeLayer: LayerId;
   parentModel: string;
@@ -273,6 +281,7 @@ function ModelRow({
   voiceStack: VoiceStack;
   onVoiceStack: (v: VoiceStack) => void;
   onTestVoice: () => void;
+  onTestChat: () => void;
 }) {
   if (activeLayer === 'parent') {
     return (
@@ -320,7 +329,27 @@ function ModelRow({
     );
   }
 
-  // chat / email: model row placeholder (inherit-with-override comes in next task)
+  if (activeLayer === 'chat') {
+    return (
+      <div className="flex items-end justify-between gap-4">
+        <div className="text-xs text-slate-500">
+          <span className="font-medium text-slate-700">Model:</span> inherits Parent (
+          <code className="font-mono text-ink-900">{parentModel}</code>) ·{' '}
+          <button className="text-botscrew-500 hover:underline">Override</button>
+        </div>
+        <button
+          onClick={onTestChat}
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-botscrew-500 hover:bg-botscrew-600 text-white rounded-md whitespace-nowrap shadow-sm"
+          title="Test the chat prompt without opening the widget"
+        >
+          <MessageCircle className="h-3.5 w-3.5" strokeWidth={2} />
+          Test Chat AI
+        </button>
+      </div>
+    );
+  }
+
+  // email: not connected yet
   return null;
 }
 

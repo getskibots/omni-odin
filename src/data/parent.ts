@@ -21,9 +21,9 @@ export interface ChannelLayer {
 }
 
 export const VOICE_MODEL_OPTIONS = [
-  'gpt-realtime',
-  'gpt-realtime-1.5',
-  'gpt-realtime-2025-08-28',
+  'voice-realtime-2.0',
+  'voice-realtime-1.5',
+  'voice-realtime-1.0',
   'gpt-4o-realtime-preview',
   'gpt-4o-realtime-preview-2025-06-03',
   'gpt-4o-realtime-preview-2024-12-17',
@@ -47,11 +47,15 @@ export const VOICE_TRANSCRIPTION_OPTIONS = [
 ] as const;
 
 export const PARENT_MODEL_OPTIONS = [
+  'gpt-5.5',
+  'gpt-5.5-mini',
   'gpt-5.4',
   'gpt-5.4-mini',
   'gpt-5.2',
   'gpt-5',
   'gpt-5-mini',
+  'gpt-4.1',
+  'gpt-4.1-mini',
   'claude-opus-4-7',
   'claude-sonnet-4-6',
   'claude-haiku-4-5',
@@ -906,7 +910,7 @@ export const jacksonHole: ParentSummary = {
       overridePrompt: VOICE_OVERRIDE,
       overrideLimit: 2500,
       voiceStack: {
-        model: 'gpt-realtime',
+        model: 'voice-realtime-2.0',
         voice: 'ash',
         transcriptionModel: 'whisper-1',
       },
