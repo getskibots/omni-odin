@@ -36,6 +36,54 @@ export async function startRealtimeSession({
 }): Promise<RealtimeSession> {
   handlers.onState('connecting');
 
+  // ── Step 1: Mint an ephemeral session key (browsers can't use full API keys
+  // directly for SDP exchange — OpenAI requires a short-lived client_secret).
+  const sessionResp = await fetch('https://api.openai.com/v1/realtime/sessions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'OpenAI-Beta': 'realtime=v1',
+    },
+    body: JSON.stringify({
+      model: REALTIME_MODEL,
+      voice,
+      modalities: ['audio', 'text'],
+      instructions: systemPrompt,
+      input_audio_format: 'pcm16',
+      output_audio_format: 'pcm16',
+      input_audio_transcription: { model: 'whisper-1' },
+      turn_detection: {
+        type: 'server_vad',
+        threshold: 0.5,
+        prefix_padding_ms: 300,
+        silence_duration_ms: 500,
+      },
+    }),
+  });
+
+  if (!sessionResp.ok) {
+    const errText = await sessionResp.text();
+    let detail = errText.slice(0, 500);
+    try {
+      const parsed = JSON.parse(errText);
+      detail = parsed.error?.message ?? detail;
+    } catch {
+      /* not JSON */
+    }
+    handlers.onError(`Session mint ${sessionResp.status}: ${detail}`);
+    handlers.onState('error');
+    throw new Error(`Ephemeral session failed: ${sessionResp.status} — ${detail}`);
+  }
+
+  const sessionData = await sessionResp.json();
+  const ephemeralKey: string | undefined = sessionData?.client_secret?.value;
+  if (!ephemeralKey) {
+    handlers.onError('No ephemeral key returned by OpenAI');
+    handlers.onState('error');
+    throw new Error('Missing client_secret.value');
+  }
+
   const pc = new RTCPeerConnection();
 
   // Audio element for the bot's voice output
@@ -66,26 +114,7 @@ export async function startRealtimeSession({
   let botBuffer = '';
 
   dc.onopen = () => {
-    // Configure the session: instructions, voice, server-VAD, input transcription
-    dc.send(
-      JSON.stringify({
-        type: 'session.update',
-        session: {
-          instructions: systemPrompt,
-          voice,
-          modalities: ['audio', 'text'],
-          input_audio_format: 'pcm16',
-          output_audio_format: 'pcm16',
-          input_audio_transcription: { model: 'whisper-1' },
-          turn_detection: {
-            type: 'server_vad',
-            threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 500,
-          },
-        },
-      }),
-    );
+    // Session config was set at mint time; nothing extra needed here.
     handlers.onState('connected');
   };
 
@@ -133,7 +162,7 @@ export async function startRealtimeSession({
       method: 'POST',
       body: offer.sdp,
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${ephemeralKey}`,
         'Content-Type': 'application/sdp',
         'OpenAI-Beta': 'realtime=v1',
       },
