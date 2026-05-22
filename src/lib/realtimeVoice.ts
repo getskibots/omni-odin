@@ -130,8 +130,10 @@ export async function startRealtimeSession({
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
 
+  // GA WebRTC endpoint is /v1/realtime/calls (the older /v1/realtime is the
+  // deprecated beta path).
   const sdpResponse = await fetch(
-    `https://api.openai.com/v1/realtime?model=${REALTIME_MODEL}`,
+    `https://api.openai.com/v1/realtime/calls?model=${REALTIME_MODEL}`,
     {
       method: 'POST',
       body: offer.sdp,
