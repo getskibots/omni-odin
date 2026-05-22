@@ -23,7 +23,7 @@ export default function Knowledge() {
       <div className="grid grid-cols-[220px_minmax(0,1fr)] gap-8 items-start">
         <KnowledgeLayersRail active={activeSection} onSelect={setActiveSection} />
 
-        <div>
+        <div className="max-w-4xl">
           {activeSection === 'instructions' && <Instructions />}
           {activeSection === 'text-edits' && (
             <SectionPlaceholder
