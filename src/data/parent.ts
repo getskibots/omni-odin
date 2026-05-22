@@ -57,12 +57,38 @@ export const PARENT_MODEL_OPTIONS = [
   'claude-haiku-4-5',
 ] as const;
 
+export interface KnowledgeUrl {
+  key: string;
+  label: string;
+  url: string;
+  enabled: boolean;
+}
+
+export interface RealtimeFlow {
+  key: string;
+  label: string;
+  enabled: boolean;
+}
+
+export interface ResortTemplate {
+  resortName: string;
+  officialUrl: string;
+  contactEmail: string;
+  contactPhone: string;
+  knowledge: KnowledgeUrl[];
+  flows: RealtimeFlow[];
+  multiPass: { hasPartners: boolean; partners: string[] };
+}
+
 export interface ParentSummary {
   id: string;
   name: string;
   defaultModel: string;
   systemRolePrompt: string;
   systemRoleLimit: number;
+  template: ResortTemplate;
+  templateVersion: string;
+  templateUpdated: string;
   knowledge: {
     textEdits: number;
     files: number;
@@ -331,6 +357,43 @@ export const jacksonHole: ParentSummary = {
   defaultModel: 'gpt-5.2',
   systemRoleLimit: 12500,
   systemRolePrompt: SYSTEM_ROLE_PROMPT,
+  templateVersion: 'v2.4',
+  templateUpdated: '2 days ago',
+  template: {
+    resortName: 'Jackson Hole Mountain Resort',
+    officialUrl: 'www.jacksonhole.com',
+    contactEmail: 'info@jacksonhole.com',
+    contactPhone: '855-679-7246',
+    knowledge: [
+      { key: 'hours', label: 'Hours of operation', url: '', enabled: true },
+      { key: 'contact', label: 'Contact', url: 'https://www.jacksonhole.com/contact', enabled: true },
+      { key: 'location', label: 'Location', url: '', enabled: true },
+      { key: 'trail-maps', label: 'Trail Maps & Difficulty', url: 'https://www.jacksonhole.com/maps/mountain-winter', enabled: true },
+      { key: 'snow-reports', label: 'Snow Reports & Weather', url: 'https://www.jacksonhole.com/mountain-report', enabled: true },
+      { key: 'webcams', label: 'Live webcams', url: 'https://www.jacksonhole.com/live-mountain-cams', enabled: true },
+      { key: 'lift-tickets', label: 'Lift Tickets', url: 'https://www.jacksonhole.com/lift-tickets', enabled: true },
+      { key: 'season-passes', label: 'Season Passes', url: 'https://www.jacksonhole.com/season-pass', enabled: true },
+      { key: 'adult-lessons', label: 'Adult Lessons', url: '', enabled: false },
+      { key: 'kids-lessons', label: 'Kids Lessons', url: '', enabled: false },
+      { key: 'rentals', label: 'Ski/Snowboard Rentals', url: '', enabled: false },
+      { key: 'dining', label: 'Dining', url: 'https://www.jacksonhole.com/dining', enabled: true },
+      { key: 'lodging', label: 'Lodging', url: 'https://www.jacksonhole.com/lodging', enabled: true },
+      { key: 'events', label: 'Events', url: 'https://www.jacksonhole.com/events', enabled: true },
+      { key: 'parking', label: 'Parking & Transit', url: 'https://www.jacksonhole.com/getting-around', enabled: true },
+    ],
+    flows: [
+      { key: 'get_snow_report', label: 'get_snow_report', enabled: true },
+      { key: 'get_lift_status', label: 'get_lift_status', enabled: true },
+      { key: 'get_terrain_status', label: 'get_terrain_status', enabled: false },
+      { key: 'get_weather', label: 'get_weather', enabled: true },
+      { key: 'get_parking', label: 'get_parking', enabled: true },
+      { key: 'get_events', label: 'get_events', enabled: true },
+    ],
+    multiPass: {
+      hasPartners: true,
+      partners: ['Mountain Collective', 'Ikon'],
+    },
+  },
   knowledge: {
     textEdits: 37,
     files: 12,

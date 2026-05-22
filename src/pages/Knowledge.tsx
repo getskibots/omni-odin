@@ -8,6 +8,7 @@ import {
 } from '../data/parent';
 import type { LayerId, VoiceStack } from '../data/parent';
 import { LayerIcon } from '../components/LayerIcon';
+import TemplateForm from '../components/TemplateForm';
 import { ChevronsRight } from 'lucide-react';
 
 type KnowledgeSection = 'instructions' | 'text-edits' | 'files' | 'website';
@@ -106,6 +107,7 @@ function Instructions() {
     voiceChannel.voiceStack ?? { model: 'gpt-realtime', voice: 'ash', transcriptionModel: 'whisper-1' },
   );
   const [activeLayer, setActiveLayer] = useState<LayerId>('parent');
+  const [parentSubTab, setParentSubTab] = useState<'template' | 'customization'>('template');
 
   const layers = useMemo(
     () => ({
@@ -160,7 +162,35 @@ function Instructions() {
         <p className="text-sm text-slate-500 mt-1">{activeMeta.subtitle}</p>
       </div>
 
-      {activeLayer === 'email' && activeChannel?.status === 'not-connected' ? (
+      {activeLayer === 'parent' ? (
+        <>
+          <div className="border-b border-slate-200 flex items-center gap-1">
+            <SubTab
+              id="template"
+              active={parentSubTab}
+              onClick={setParentSubTab}
+              label="Template"
+            />
+            <SubTab
+              id="customization"
+              active={parentSubTab}
+              onClick={setParentSubTab}
+              label="Customization"
+            />
+          </div>
+          {parentSubTab === 'template' ? (
+            <TemplateForm />
+          ) : (
+            <EditorCard
+              value={parentPrompt}
+              onChange={setParentPrompt}
+              limit={limit}
+              hint="Resort-specific rules and scripts that aren't in the template (e.g. Peak Pass blackouts, military discount scripts, persona definitions)."
+              placeholder=""
+            />
+          )}
+        </>
+      ) : activeLayer === 'email' && activeChannel?.status === 'not-connected' ? (
         <EmailNotConnectedNotice
           value={activeValue}
           onChange={(v) => setLayerValue('email', v)}
@@ -190,6 +220,32 @@ function Instructions() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function SubTab({
+  id,
+  active,
+  onClick,
+  label,
+}: {
+  id: 'template' | 'customization';
+  active: 'template' | 'customization';
+  onClick: (id: 'template' | 'customization') => void;
+  label: string;
+}) {
+  const isActive = active === id;
+  return (
+    <button
+      onClick={() => onClick(id)}
+      className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition ${
+        isActive
+          ? 'border-botscrew-500 text-botscrew-500'
+          : 'border-transparent text-slate-500 hover:text-ink-900'
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 
