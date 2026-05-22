@@ -150,22 +150,12 @@ function Instructions() {
         onVoiceStack={setVoiceStack}
       />
 
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <div className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
-            Editing layer
-          </div>
-          <h3 className="text-base font-semibold text-ink-900 mt-0.5 flex items-center gap-2">
-            <span>{activeMeta.icon}</span>
-            <span>{activeMeta.title}</span>
-            {activeChannel?.botscrewBotId && (
-              <span className="text-xs font-normal text-slate-400 font-mono">
-                {activeChannel.botscrewBotId}
-              </span>
-            )}
-          </h3>
-          <p className="text-sm text-slate-500 mt-0.5">{activeMeta.subtitle}</p>
-        </div>
+      <div>
+        <h3 className="text-base font-semibold text-ink-900 flex items-center gap-2">
+          <span>{activeMeta.icon}</span>
+          <span>{activeMeta.title}</span>
+        </h3>
+        <p className="text-sm text-slate-500 mt-1">{activeMeta.subtitle}</p>
       </div>
 
       {activeLayer === 'email' && activeChannel?.status === 'not-connected' ? (
@@ -288,7 +278,6 @@ function FieldDropdown({
 }
 
 function LayerPicker({
-  layers,
   active,
   onSelect,
 }: {
@@ -304,34 +293,19 @@ function LayerPicker({
         onSelect={onSelect}
         icon="●"
         label="Parent · System Role"
-        meta={`${layers.parent.length.toLocaleString()} / ${jacksonHole.systemRoleLimit.toLocaleString()}`}
       />
       <div className="w-px bg-slate-200 mx-1" />
-      {jacksonHole.channels.map((c) => {
-        const override = layers[c.id];
-        const isEmpty = override.length === 0;
-        const notConnected = c.status === 'not-connected';
-        const assembled = layers.parent.length + override.length;
-        return (
-          <LayerPill
-            key={c.id}
-            id={c.id}
-            active={active}
-            onSelect={onSelect}
-            icon={c.icon}
-            label={c.label}
-            botId={c.botscrewBotId}
-            meta={
-              notConnected
-                ? 'not connected'
-                : isEmpty
-                  ? 'no override'
-                  : `+${override.length.toLocaleString()}  →  ${assembled.toLocaleString()}`
-            }
-            disabled={notConnected && isEmpty}
-          />
-        );
-      })}
+      {jacksonHole.channels.map((c) => (
+        <LayerPill
+          key={c.id}
+          id={c.id}
+          active={active}
+          onSelect={onSelect}
+          icon={c.icon}
+          label={c.label}
+          notConnected={c.status === 'not-connected'}
+        />
+      ))}
     </div>
   );
 }
@@ -342,39 +316,31 @@ function LayerPill({
   onSelect,
   icon,
   label,
-  meta,
-  botId,
-  disabled,
+  notConnected,
 }: {
   id: LayerId;
   active: LayerId;
   onSelect: (id: LayerId) => void;
   icon: string;
   label: string;
-  meta: string;
-  botId?: string | null;
-  disabled?: boolean;
+  notConnected?: boolean;
 }) {
   const isActive = active === id;
   return (
     <button
       onClick={() => onSelect(id)}
-      disabled={disabled}
-      className={`flex-1 text-left rounded-md px-3 py-2 transition ${
+      className={`flex-1 text-left rounded-md px-3 py-3 transition ${
         isActive
           ? 'bg-botscrew-50 ring-2 ring-botscrew-400 text-ink-900'
-          : disabled
-            ? 'text-slate-400 cursor-not-allowed'
-            : 'hover:bg-slate-50 text-ink-900'
+          : 'hover:bg-slate-50 text-ink-900'
       }`}
     >
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         <span className="text-sm leading-none">{icon}</span>
         <span className="text-sm font-medium truncate">{label}</span>
-      </div>
-      <div className="mt-0.5 ml-5 text-[11px] text-slate-500 truncate">
-        {botId && <span className="font-mono mr-1.5">{botId}</span>}
-        {meta}
+        {notConnected && (
+          <span className="ml-auto text-[11px] text-slate-400 italic">not connected</span>
+        )}
       </div>
     </button>
   );
