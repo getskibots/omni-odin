@@ -7,7 +7,7 @@
  * https://platform.openai.com/docs/guides/realtime-webrtc
  */
 
-const REALTIME_MODEL = 'gpt-4o-realtime-preview-2024-12-17';
+const REALTIME_MODEL = 'gpt-realtime';
 
 export type ConnectionState = 'idle' | 'connecting' | 'connected' | 'error';
 
@@ -135,18 +135,27 @@ export async function startRealtimeSession({
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/sdp',
+        'OpenAI-Beta': 'realtime=v1',
       },
     },
   );
 
   if (!sdpResponse.ok) {
     const err = await sdpResponse.text();
-    handlers.onError(`OpenAI ${sdpResponse.status}: ${err.slice(0, 200)}`);
+    // Try to surface OpenAI's JSON error message cleanly
+    let detail = err.slice(0, 500);
+    try {
+      const parsed = JSON.parse(err);
+      detail = parsed.error?.message ?? detail;
+    } catch {
+      /* not JSON */
+    }
+    handlers.onError(`OpenAI ${sdpResponse.status}: ${detail}`);
     handlers.onState('error');
     micStream.getTracks().forEach((t) => t.stop());
     pc.close();
     audioEl.remove();
-    throw new Error(`Realtime negotiation failed: ${sdpResponse.status}`);
+    throw new Error(`Realtime negotiation failed: ${sdpResponse.status} — ${detail}`);
   }
 
   const answerSdp = await sdpResponse.text();
