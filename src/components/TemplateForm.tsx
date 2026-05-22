@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
-import { jacksonHole } from '../data/parent';
+import { jacksonHole, renderTemplate } from '../data/parent';
 import type { ResortTemplate } from '../data/parent';
 
 export default function TemplateForm() {
   const [template, setTemplate] = useState<ResortTemplate>(jacksonHole.template);
+  const rendered = useMemo(() => renderTemplate(template), [template]);
 
   const updateField = <K extends keyof ResortTemplate>(key: K, value: ResortTemplate[K]) => {
     setTemplate({ ...template, [key]: value });
@@ -158,6 +159,24 @@ export default function TemplateForm() {
           )}
         </div>
       </Section>
+
+      <div className="bg-slate-50 border border-slate-200 rounded-xl shadow-card">
+        <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+          <div>
+            <div className="text-sm font-semibold text-ink-900">Generated prompt</div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Auto-assembled from the form above. Toggles, URLs, and partners reshape this in
+              real time. Concatenated with Customization at push.
+            </p>
+          </div>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border border-slate-200 bg-white text-slate-600">
+            {rendered.length.toLocaleString()} chars
+          </span>
+        </div>
+        <pre className="p-4 text-xs font-mono text-ink-700 whitespace-pre-wrap leading-relaxed overflow-x-auto">
+          {rendered}
+        </pre>
+      </div>
     </div>
   );
 }

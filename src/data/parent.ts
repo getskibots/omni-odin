@@ -351,6 +351,44 @@ Tool Failure Handling:
 Tone:
 • Slightly more formal than chat, still warm. Match the guest's register — formal if they're formal, casual if they're casual.`;
 
+export function renderTemplate(t: ResortTemplate): string {
+  const lines: string[] = [];
+
+  lines.push(`Resort: ${t.resortName}`);
+  if (t.officialUrl) lines.push(`Official Website: ${t.officialUrl}`);
+  if (t.contactEmail || t.contactPhone) {
+    const parts = [t.contactEmail, t.contactPhone].filter(Boolean);
+    lines.push(`Contact: ${parts.join(' · ')}`);
+  }
+  lines.push('');
+
+  const enabledKnowledge = t.knowledge.filter((k) => k.enabled);
+  if (enabledKnowledge.length > 0) {
+    lines.push('Resort Knowledge — verified URLs by category:');
+    enabledKnowledge.forEach((k) => {
+      lines.push(k.url ? `• ${k.label}: ${k.url}` : `• ${k.label}: see Customization`);
+    });
+    lines.push('');
+  }
+
+  const enabledFlows = t.flows.filter((f) => f.enabled);
+  if (enabledFlows.length > 0) {
+    lines.push('Realtime Data Flows — call when relevant:');
+    enabledFlows.forEach((f) => {
+      lines.push(`• ${f.label}`);
+    });
+    lines.push('');
+  }
+
+  if (t.multiPass.hasPartners && t.multiPass.partners.length > 0) {
+    lines.push(`Multi-Pass Programs: ${t.multiPass.partners.join(', ')}`);
+  } else {
+    lines.push('Multi-Pass Programs: No partnership passes');
+  }
+
+  return lines.join('\n');
+}
+
 export const jacksonHole: ParentSummary = {
   id: 'jh',
   name: 'Jackson Hole - ACTIVE',
