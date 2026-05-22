@@ -63,7 +63,10 @@ function Instructions() {
   };
 
   const activeValue = layers[activeLayer];
-  const limit = activeLayer === 'parent' ? jacksonHole.systemRoleLimit : 3000;
+  const limit =
+    activeLayer === 'parent'
+      ? jacksonHole.systemRoleLimit
+      : jacksonHole.channels.find((c) => c.id === activeLayer)?.overrideLimit ?? 2500;
   const activeMeta = layerMeta(activeLayer);
 
   return (
