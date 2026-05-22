@@ -33,6 +33,8 @@ import {
   INDUSTRY_LABELS,
   NOTE_TYPE_META,
   sortNotes,
+  substituteVariables,
+  DEFAULT_BEHAVIOR_SECTIONS,
 } from '../data/parent';
 import type {
   ResortTemplate,
@@ -40,6 +42,7 @@ import type {
   KnowledgeUrl,
   KnowledgeNote,
   KnowledgeNoteType,
+  BehaviorSection,
 } from '../data/parent';
 import { BOILERPLATE_SECTIONS } from '../data/template-boilerplate';
 
@@ -205,6 +208,29 @@ export default function TemplateForm() {
         </div>
       </Section>
 
+      <BehaviorSectionsList
+        sections={template.behaviorSections}
+        template={template}
+        onUpdate={(id, body) =>
+          setTemplate({
+            ...template,
+            behaviorSections: template.behaviorSections.map((s) =>
+              s.id === id ? { ...s, body } : s,
+            ),
+          })
+        }
+        onReset={(id) => {
+          const def = DEFAULT_BEHAVIOR_SECTIONS.find((s) => s.id === id);
+          if (!def) return;
+          setTemplate({
+            ...template,
+            behaviorSections: template.behaviorSections.map((s) =>
+              s.id === id ? { ...s, body: def.body } : s,
+            ),
+          });
+        }}
+      />
+
       <BoilerplateSection
         open={boilerplateOpen}
         onToggle={() => setBoilerplateOpen(!boilerplateOpen)}
@@ -352,6 +378,109 @@ export default function TemplateForm() {
         <pre className="p-4 text-xs font-mono text-ink-700 whitespace-pre-wrap leading-relaxed overflow-x-auto max-h-96 overflow-y-auto">
           {rendered}
         </pre>
+      </div>
+    </div>
+  );
+}
+
+function BehaviorSectionsList({
+  sections,
+  template,
+  onUpdate,
+  onReset,
+}: {
+  sections: BehaviorSection[];
+  template: ResortTemplate;
+  onUpdate: (id: string, body: string) => void;
+  onReset: (id: string) => void;
+}) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggle = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  return (
+    <div>
+      <div className="text-sm font-semibold text-ink-900 mb-1">🧭 Behavior Sections</div>
+      <p className="text-xs text-slate-500 mb-3">
+        Editable per resort. Variables like{' '}
+        <code className="font-mono text-[11px] bg-slate-100 px-1 py-0.5 rounded">
+          {'{{Resort Name}}'}
+        </code>{' '}
+        and{' '}
+        <code className="font-mono text-[11px] bg-slate-100 px-1 py-0.5 rounded">
+          {'{{bot_datetime}}'}
+        </code>{' '}
+        substitute at assembly.
+      </p>
+      <div className="space-y-2">
+        {sections.map((section) => {
+          const isExpanded = expanded.has(section.id);
+          const def = DEFAULT_BEHAVIOR_SECTIONS.find((s) => s.id === section.id);
+          const isDefault = def?.body === section.body;
+          return (
+            <div
+              key={section.id}
+              className="bg-white border border-slate-200 rounded-lg overflow-hidden"
+            >
+              <button
+                onClick={() => toggle(section.id)}
+                className="w-full text-left px-4 py-2.5 flex items-center justify-between hover:bg-slate-50"
+              >
+                <div className="flex items-center gap-2">
+                  {isExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-slate-400" strokeWidth={2} />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-slate-400" strokeWidth={2} />
+                  )}
+                  <span className="text-sm font-semibold text-ink-900">
+                    <span className="mr-1.5">{section.emoji}</span>
+                    {section.title}
+                  </span>
+                  {!isDefault && (
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-warn ml-2">
+                      Edited
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-slate-400">
+                  {section.body.length.toLocaleString()} chars
+                </span>
+              </button>
+              {isExpanded && (
+                <div className="border-t border-slate-100 p-3 space-y-2">
+                  <textarea
+                    value={section.body}
+                    onChange={(e) => onUpdate(section.id, e.target.value)}
+                    className="w-full min-h-[140px] text-sm font-mono px-3 py-2 border border-slate-200 rounded-md bg-slate-50 text-ink-900 focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+                  />
+                  <details className="text-xs text-slate-500">
+                    <summary className="cursor-pointer hover:text-ink-900">
+                      Preview with variables substituted ({template.resortName})
+                    </summary>
+                    <pre className="mt-2 p-2 bg-slate-50 border border-slate-200 rounded-md whitespace-pre-wrap font-mono text-slate-700">
+                      {substituteVariables(section.body, template)}
+                    </pre>
+                  </details>
+                  {!isDefault && (
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => onReset(section.id)}
+                        className="text-xs text-slate-500 hover:text-botscrew-600"
+                      >
+                        Reset to GSB default
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

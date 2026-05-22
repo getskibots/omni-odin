@@ -118,6 +118,21 @@ export interface KnowledgeGroup {
   entries: KnowledgeUrl[];
 }
 
+export interface BehaviorSection {
+  id: string;
+  emoji: string;
+  title: string;
+  body: string;
+}
+
+export function substituteVariables(text: string, t: ResortTemplate): string {
+  return text
+    .replace(/\{\{Resort Name\}\}/g, t.resortName || '{{Resort Name}}')
+    .replace(/\{\{Resort URL\}\}/g, t.officialUrl || '{{Resort URL}}')
+    .replace(/\{\{Resort Email\}\}/g, t.contactEmail || '{{Resort Email}}')
+    .replace(/\{\{Resort Phone\}\}/g, t.contactPhone || '{{Resort Phone}}');
+}
+
 export interface RealtimeFlow {
   key: string;
   label: string;
@@ -159,10 +174,56 @@ export interface ResortTemplate {
   officialUrl: string;
   contactEmail: string;
   contactPhone: string;
+  behaviorSections: BehaviorSection[];
   knowledgeGroups: KnowledgeGroup[];
   flows: RealtimeFlow[];
   multiPass: { hasPartners: boolean; partners: string[] };
 }
+
+export const DEFAULT_BEHAVIOR_SECTIONS: BehaviorSection[] = [
+  {
+    id: 'purpose',
+    emoji: '🎯',
+    title: 'Purpose',
+    body: `Provide guests with accurate, resort-specific information about {{Resort Name}} using verified content from the resort's official website.`,
+  },
+  {
+    id: 'role',
+    emoji: '🧑‍💼',
+    title: 'Role',
+    body: `You are the official AI guest information assistant for {{Resort Name}}.
+
+- Answer guest questions about the resort.
+- Use "we, us, our" for the resort; use "I" only when referring to the AI itself.
+- Direct guests to relevant pages from the resort's official website when appropriate.
+- Use only verified resort information and approved resources.
+- Do not assume or speculate about policies, pricing, conditions, schedules, or availability.
+- For off-topic questions, steer the guest back to the verified resort information.`,
+  },
+  {
+    id: 'behavior-pillars',
+    emoji: '🧠',
+    title: 'Behavior Pillars',
+    body: `- Concise: Keep replies brief and focused, around 50 words, typically 2-3 short sentences.
+- Clear: Use simple, easy-to-understand language.
+- Friendly: Maintain a warm and professional tone.
+- Excitable & Enthusiastic: Bring high energy to every response—sound upbeat, welcoming, and stoked to help, like you're caffeinated (without being overwhelming or unprofessional).
+- Empathetic: Acknowledge guest concerns when appropriate and offer helpful next steps.
+- Seasonal: Align responses with current resort operations and seasonal context.
+- Context-Aware: Reference earlier messages when helpful to maintain conversation flow.`,
+  },
+  {
+    id: 'time-awareness',
+    emoji: '⏱',
+    title: 'Time Awareness',
+    body: `- Use the attribute {{bot_datetime}} to understand the current date, time, day of the week, and season.
+- Use this awareness to keep responses current, seasonally accurate, and relevant to the guest's timeframe when provided.
+- Treat hours, schedules, availability, events, and operations as time-sensitive.
+- Do not reference outdated seasonal offerings, past events, or expired information as if they are current.
+- Do not assume winter information applies to summer operations, or summer information applies to winter operations.
+- If time-sensitive information cannot be confirmed, do not guess.`,
+  },
+];
 
 export interface ParentSummary {
   id: string;
@@ -446,7 +507,14 @@ export function renderTemplate(t: ResortTemplate): string {
   if (t.officialUrl) lines.push(`Official Website: ${t.officialUrl}`);
   lines.push('');
 
-  // Boilerplate sections (Purpose, Role, Behavior Pillars, etc.)
+  // Editable behavior sections (Purpose, Role, Behavior Pillars, Time Awareness)
+  t.behaviorSections.forEach((section) => {
+    lines.push(`${section.emoji} ${section.title}`);
+    lines.push(substituteVariables(section.body, t));
+    lines.push('');
+  });
+
+  // GSB-managed boilerplate sections (Realtime, Linking, Prequalifying, etc.)
   BOILERPLATE_SECTIONS.forEach((section) => {
     lines.push(`${section.emoji} ${section.title}`);
     lines.push(section.body(t));
@@ -512,6 +580,7 @@ export const jacksonHole: ParentSummary = {
     officialUrl: 'www.jacksonhole.com',
     contactEmail: 'info@jacksonhole.com',
     contactPhone: '855-679-7246',
+    behaviorSections: DEFAULT_BEHAVIOR_SECTIONS,
     knowledgeGroups: [
       {
         id: 'resort-info',
