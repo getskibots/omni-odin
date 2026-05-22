@@ -1,0 +1,387 @@
+import { useMemo, useState } from 'react';
+import {
+  conversations,
+  type AttentionFlag,
+  type Channel,
+  type Conversation,
+} from '../data/conversations';
+
+type ChannelFilter = 'all' | Channel;
+type AttentionFilter = 'all' | 'needs-attention';
+
+export default function Support() {
+  const [channelFilter, setChannelFilter] = useState<ChannelFilter>('all');
+  const [attentionFilter, setAttentionFilter] = useState<AttentionFilter>('all');
+  const [query, setQuery] = useState('');
+  const [selectedId, setSelectedId] = useState<string>(conversations[0].id);
+
+  const filtered = useMemo(() => {
+    return conversations.filter((c) => {
+      if (channelFilter !== 'all' && c.channel !== channelFilter) return false;
+      if (attentionFilter === 'needs-attention' && c.flags.length === 0) return false;
+      if (query) {
+        const q = query.toLowerCase();
+        if (
+          !c.identityLabel.toLowerCase().includes(q) &&
+          !c.preview.toLowerCase().includes(q) &&
+          !(c.subject ?? '').toLowerCase().includes(q)
+        )
+          return false;
+      }
+      return true;
+    });
+  }, [channelFilter, attentionFilter, query]);
+
+  const selected = conversations.find((c) => c.id === selectedId) ?? filtered[0];
+  const linked = selected?.linkedConversationIds
+    ?.map((id) => conversations.find((c) => c.id === id))
+    .filter((c): c is Conversation => Boolean(c));
+
+  const counts = {
+    all: conversations.length,
+    chat: conversations.filter((c) => c.channel === 'chat').length,
+    voice: conversations.filter((c) => c.channel === 'voice').length,
+    email: conversations.filter((c) => c.channel === 'email').length,
+  };
+  const attentionCount = conversations.filter((c) => c.flags.length > 0).length;
+
+  return (
+    <div className="h-full flex flex-col">
+      <header className="px-6 pt-4 pb-3 border-b border-slate-200 bg-white">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h1 className="text-xl font-semibold text-ink-900">Support</h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              All channels in one inbox. {attentionCount} need attention.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <RangePill label="Last 7 days" active />
+            <RangePill label="Last 30 days" />
+            <RangePill label="Custom" />
+            <button className="px-3 py-1.5 text-sm rounded-md bg-action-500 hover:bg-action-600 text-white">
+              Export chats
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-1">
+            <ChannelChip active={channelFilter === 'all'} onClick={() => setChannelFilter('all')}>
+              All · <span className="font-mono text-xs">{counts.all}</span>
+            </ChannelChip>
+            <ChannelChip active={channelFilter === 'chat'} onClick={() => setChannelFilter('chat')}>
+              💬 Chat · <span className="font-mono text-xs">{counts.chat}</span>
+            </ChannelChip>
+            <ChannelChip active={channelFilter === 'voice'} onClick={() => setChannelFilter('voice')}>
+              📞 Voice · <span className="font-mono text-xs">{counts.voice}</span>
+            </ChannelChip>
+            <ChannelChip active={channelFilter === 'email'} onClick={() => setChannelFilter('email')}>
+              ✉️ Email · <span className="font-mono text-xs">{counts.email}</span>
+            </ChannelChip>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() =>
+                setAttentionFilter(attentionFilter === 'all' ? 'needs-attention' : 'all')
+              }
+              className={`text-xs px-3 py-1.5 rounded-md border ${
+                attentionFilter === 'needs-attention'
+                  ? 'bg-warn/10 border-warn/40 text-warn'
+                  : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
+              }`}
+            >
+              ⚠️ Needs attention {attentionFilter === 'needs-attention' && `· ${attentionCount}`}
+            </button>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search chats / users"
+              className="text-sm border border-slate-200 rounded-md px-3 py-1.5 bg-white w-56 focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+            />
+          </div>
+        </div>
+      </header>
+
+      <div className="flex-1 grid grid-cols-[360px_minmax(0,1fr)] min-h-0">
+        <aside className="border-r border-slate-200 bg-white overflow-y-auto">
+          {filtered.length === 0 ? (
+            <div className="p-8 text-center text-sm text-slate-400">No conversations match.</div>
+          ) : (
+            filtered.map((c) => (
+              <ConversationRow
+                key={c.id}
+                conv={c}
+                selected={c.id === selectedId}
+                onClick={() => setSelectedId(c.id)}
+              />
+            ))
+          )}
+        </aside>
+
+        <section className="overflow-y-auto bg-slate-50">
+          {selected ? (
+            <ConversationPane conv={selected} linked={linked} />
+          ) : (
+            <div className="p-8 text-sm text-slate-400">Select a conversation.</div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function RangePill({ label, active }: { label: string; active?: boolean }) {
+  return (
+    <button
+      className={`px-3 py-1.5 text-sm rounded-md border ${
+        active
+          ? 'bg-botscrew-500 border-botscrew-500 text-white'
+          : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function ChannelChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`text-sm px-3 py-1.5 rounded-md border transition ${
+        active
+          ? 'bg-botscrew-50 border-botscrew-400 text-ink-900'
+          : 'bg-white border-transparent text-slate-500 hover:text-ink-900 hover:bg-slate-50'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ConversationRow({
+  conv,
+  selected,
+  onClick,
+}: {
+  conv: Conversation;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left px-4 py-3 border-b border-slate-100 transition ${
+        selected ? 'bg-botscrew-50' : 'bg-white hover:bg-slate-50'
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <div className="shrink-0 mt-0.5">
+          <ChannelBadge channel={conv.channel} connector={conv.connector} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-sm font-medium text-ink-900 truncate">{conv.identityLabel}</div>
+            <div className="text-xs text-slate-400 shrink-0">{conv.time}</div>
+          </div>
+          {conv.identitySub && (
+            <div className="text-xs text-slate-500 truncate">{conv.identitySub}</div>
+          )}
+          {conv.subject && (
+            <div className="text-xs text-slate-600 font-medium truncate mt-0.5">
+              {conv.subject}
+            </div>
+          )}
+          <div className="text-xs text-slate-500 truncate mt-0.5">{conv.preview}</div>
+          {(conv.flags.length > 0 || conv.unread > 0) && (
+            <div className="flex items-center gap-2 mt-2">
+              {conv.flags.map((f) => (
+                <AttentionPill key={f} flag={f} />
+              ))}
+              {conv.unread > 0 && (
+                <span className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-semibold bg-botscrew-500 text-white">
+                  {conv.unread}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function ChannelBadge({ channel, connector }: { channel: Channel; connector?: string }) {
+  const styles: Record<Channel, string> = {
+    chat: 'bg-botscrew-50 text-botscrew-700 border-botscrew-200',
+    voice: 'bg-violet-50 text-violet-700 border-violet-200',
+    email: 'bg-amber-50 text-amber-700 border-amber-200',
+  };
+  const icon = channel === 'chat' ? '💬' : channel === 'voice' ? '📞' : '✉️';
+  const label = channel.charAt(0).toUpperCase() + channel.slice(1);
+  return (
+    <div
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${styles[channel]}`}
+      title={connector ? `${label} · ${connector}` : label}
+    >
+      <span>{icon}</span>
+      <span>{connector ? connector.charAt(0).toUpperCase() + connector.slice(1) : label}</span>
+    </div>
+  );
+}
+
+function AttentionPill({ flag }: { flag: AttentionFlag }) {
+  const map: Record<AttentionFlag, { label: string; tone: string }> = {
+    'human-requested': { label: 'Wants human', tone: 'bg-action-500/10 text-action-600 border-action-500/30' },
+    'tool-failed': { label: 'Tool failed', tone: 'bg-danger/10 text-danger border-danger/30' },
+    'missed-call': { label: 'Missed call', tone: 'bg-danger/10 text-danger border-danger/30' },
+    unanswered: { label: 'Unanswered', tone: 'bg-warn/10 text-warn border-warn/30' },
+    'negative-sentiment': { label: 'Negative', tone: 'bg-rose-500/10 text-rose-600 border-rose-500/30' },
+    'failed-booking': { label: 'Booking failed', tone: 'bg-danger/10 text-danger border-danger/30' },
+  };
+  const m = map[flag];
+  return (
+    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${m.tone}`}>
+      {m.label}
+    </span>
+  );
+}
+
+function ConversationPane({
+  conv,
+  linked,
+}: {
+  conv: Conversation;
+  linked?: Conversation[];
+}) {
+  return (
+    <div className="max-w-3xl mx-auto px-6 py-5">
+      <header className="bg-white border border-slate-200 rounded-xl p-4 mb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <ChannelBadge channel={conv.channel} connector={conv.connector} />
+              {conv.flags.map((f) => (
+                <AttentionPill key={f} flag={f} />
+              ))}
+            </div>
+            <h2 className="text-base font-semibold text-ink-900">{conv.identityLabel}</h2>
+            {conv.identitySub && (
+              <div className="text-xs text-slate-500 mt-0.5">{conv.identitySub}</div>
+            )}
+            {conv.subject && (
+              <div className="text-sm font-medium text-ink-900 mt-2">{conv.subject}</div>
+            )}
+          </div>
+          <div className="text-right text-xs text-slate-400">
+            <div>{conv.time}</div>
+            {conv.callDuration && conv.callDuration !== '00:00' && (
+              <div className="mt-1 font-mono text-slate-600">Duration {conv.callDuration}</div>
+            )}
+          </div>
+        </div>
+        {linked && linked.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">
+              Related on other channels
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {linked.map((l) => (
+                <a
+                  key={l.id}
+                  href="#"
+                  className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border border-slate-200 bg-slate-50 hover:bg-white"
+                >
+                  <ChannelBadge channel={l.channel} connector={l.connector} />
+                  <span className="text-slate-600">{l.subject ?? l.preview.slice(0, 40)}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </header>
+
+      {conv.messages.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-sm text-slate-500">
+          {conv.flags.includes('missed-call')
+            ? 'Caller hung up before connecting. No voicemail.'
+            : 'No messages yet.'}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {conv.channel === 'voice' && <AudioPlaceholder duration={conv.callDuration ?? '00:00'} />}
+          {conv.messages.map((m, i) => (
+            <MessageBubble key={i} message={m} channel={conv.channel} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AudioPlaceholder({ duration }: { duration: string }) {
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-3">
+      <button className="h-9 w-9 rounded-full bg-botscrew-500 text-white flex items-center justify-center hover:bg-botscrew-600">
+        ▶
+      </button>
+      <div className="flex-1 h-1.5 bg-slate-100 rounded-full">
+        <div className="h-full bg-botscrew-500 rounded-full" style={{ width: '0%' }} />
+      </div>
+      <span className="text-xs font-mono text-slate-500">{duration}</span>
+      <button className="text-slate-400 hover:text-ink-900" title="Download">
+        ⬇
+      </button>
+    </div>
+  );
+}
+
+function MessageBubble({ message, channel }: { message: Message; channel: Channel }) {
+  if (message.toolCall) {
+    return (
+      <div className="flex justify-center text-xs text-slate-500">
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${
+            message.toolCall.failed
+              ? 'bg-danger/10 text-danger border-danger/30'
+              : 'bg-slate-100 border-slate-200'
+          }`}
+        >
+          <span>{message.toolCall.failed ? '⚠' : '⚙'}</span>
+          <code className="font-mono text-[11px]">{message.toolCall.name}</code>
+          {message.toolCall.failed && <span>· failed</span>}
+        </span>
+      </div>
+    );
+  }
+
+  const isBot = message.from === 'bot';
+  const isEmail = channel === 'email';
+
+  return (
+    <div className={`flex ${isBot ? 'justify-end' : 'justify-start'}`}>
+      <div
+        className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${
+          isBot
+            ? 'bg-botscrew-500 text-white rounded-br-sm'
+            : 'bg-white border border-slate-200 text-ink-900 rounded-bl-sm'
+        } ${isEmail ? 'whitespace-pre-wrap' : ''}`}
+      >
+        <div className={`text-sm ${isEmail ? 'leading-relaxed' : ''}`}>{message.text}</div>
+        <div className={`text-[10px] mt-1 ${isBot ? 'text-white/70' : 'text-slate-400'} flex items-center gap-2`}>
+          <span>{message.time}</span>
+          {message.audioDuration && <span className="font-mono">▶ {message.audioDuration}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}

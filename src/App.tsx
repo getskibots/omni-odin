@@ -3,6 +3,7 @@ import DashboardShell from './components/DashboardShell';
 import Knowledge from './pages/Knowledge';
 import Placeholder from './pages/Placeholder';
 import SettingsChannels from './pages/SettingsChannels';
+import Support from './pages/Support';
 
 export default function App() {
   return (
@@ -11,7 +12,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/knowledge" replace />} />
         <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/analytics" element={<Placeholder title="Analytics" />} />
-        <Route path="/support" element={<Placeholder title="Support" />} />
+        <Route path="/support" element={<Support />} />
         <Route path="/ai-edits" element={<Placeholder title="AI Edits" />} />
         <Route path="/flows" element={<Placeholder title="Flows" />} />
         <Route path="/actions" element={<Placeholder title="Actions" />} />
