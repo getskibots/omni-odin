@@ -257,6 +257,8 @@ export default function TemplateForm() {
       <Section
         title="⚡ Realtime Data Flows"
         subtitle="Enable the flows your bot should call for live data. Each flow corresponds to a tool the model can invoke mid-conversation."
+        collapsible
+        defaultOpen={false}
       >
         <div className="grid grid-cols-2 gap-2">
           {template.flows.map((f) => (
@@ -362,7 +364,12 @@ export default function TemplateForm() {
         </div>
       </div>
 
-      <Section title="🎟 Multi-Pass Programs" subtitle="Partner passes accepted at this resort.">
+      <Section
+        title="🎟 Multi-Pass Programs"
+        subtitle="Partner passes accepted at this resort."
+        collapsible
+        defaultOpen={false}
+      >
         <div className="space-y-2">
           <div className="flex items-center gap-4">
             <Radio
@@ -1054,19 +1061,45 @@ function NoteEditor({
 function Section({
   title,
   subtitle,
+  collapsible,
+  defaultOpen,
   children,
 }: {
   title: string;
   subtitle?: string;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
   children: React.ReactNode;
 }) {
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-card">
-      <div className="px-4 py-3 border-b border-slate-100">
-        <div className="text-sm font-semibold text-ink-900">{title}</div>
-        {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+  const [open, setOpen] = useState(defaultOpen ?? !collapsible);
+  if (!collapsible) {
+    return (
+      <div className="bg-white border border-slate-200 rounded-xl shadow-card">
+        <div className="px-4 py-3 border-b border-slate-100">
+          <div className="text-sm font-semibold text-ink-900">{title}</div>
+          {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+        </div>
+        <div className="p-4">{children}</div>
       </div>
-      <div className="p-4">{children}</div>
+    );
+  }
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl shadow-card overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-slate-50"
+      >
+        {open ? (
+          <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" strokeWidth={2} />
+        ) : (
+          <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" strokeWidth={2} />
+        )}
+        <div className="flex-1">
+          <div className="text-sm font-semibold text-ink-900">{title}</div>
+          {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+        </div>
+      </button>
+      {open && <div className="p-4 border-t border-slate-100">{children}</div>}
     </div>
   );
 }
