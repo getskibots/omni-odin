@@ -8,7 +8,6 @@ import {
   VOICE_TRANSCRIPTION_OPTIONS,
   isOpenAIVoice,
   loadCustomVoices,
-  saveCustomVoices,
 } from '../data/parent';
 import type { LayerId, VoiceStack, ResortTemplate, CustomVoice } from '../data/parent';
 import { LayerIcon } from '../components/LayerIcon';
@@ -168,25 +167,7 @@ function Instructions() {
   const [savedAt, setSavedAt] = useState<number | null>(persisted?.savedAt ?? null);
   const [savedFlash, setSavedFlash] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [customVoices, setCustomVoices] = useState<CustomVoice[]>(() => loadCustomVoices());
-
-  const addCustomVoice = (name: string, voiceId: string) => {
-    const newVoice: CustomVoice = {
-      id: `cv-${Math.random().toString(36).slice(2, 9)}`,
-      name: name.trim(),
-      voiceId: voiceId.trim(),
-    };
-    const next = [...customVoices, newVoice];
-    setCustomVoices(next);
-    saveCustomVoices(next);
-    return newVoice;
-  };
-
-  const removeCustomVoice = (id: string) => {
-    const next = customVoices.filter((v) => v.id !== id);
-    setCustomVoices(next);
-    saveCustomVoices(next);
-  };
+  const [customVoices] = useState<CustomVoice[]>(() => loadCustomVoices());
 
   const save = () => {
     const data: PersistedState = {
@@ -267,8 +248,6 @@ function Instructions() {
         onTestVoice={() => setTestChannel('voice')}
         onTestChat={() => setTestChannel('chat')}
         customVoices={customVoices}
-        onAddCustomVoice={addCustomVoice}
-        onRemoveCustomVoice={removeCustomVoice}
       />
 
       <TestVoiceModal
@@ -468,8 +447,6 @@ function ModelRow({
   onTestVoice,
   onTestChat,
   customVoices,
-  onAddCustomVoice,
-  onRemoveCustomVoice,
 }: {
   activeLayer: LayerId;
   parentModel: string;
@@ -479,8 +456,6 @@ function ModelRow({
   onTestVoice: () => void;
   onTestChat: () => void;
   customVoices: CustomVoice[];
-  onAddCustomVoice: (name: string, voiceId: string) => CustomVoice;
-  onRemoveCustomVoice: (id: string) => void;
 }) {
   if (activeLayer === 'parent') {
     return (
@@ -503,8 +478,6 @@ function ModelRow({
         onTestVoice={onTestVoice}
         parentModel={parentModel}
         customVoices={customVoices}
-        onAddCustomVoice={onAddCustomVoice}
-        onRemoveCustomVoice={onRemoveCustomVoice}
       />
     );
   }
@@ -540,34 +513,14 @@ function VoiceModelRow({
   onTestVoice,
   parentModel,
   customVoices,
-  onAddCustomVoice,
-  onRemoveCustomVoice,
 }: {
   voiceStack: VoiceStack;
   onVoiceStack: (v: VoiceStack) => void;
   onTestVoice: () => void;
   parentModel: string;
   customVoices: CustomVoice[];
-  onAddCustomVoice: (name: string, voiceId: string) => CustomVoice;
-  onRemoveCustomVoice: (id: string) => void;
 }) {
-  const [adding, setAdding] = useState(false);
-  const [draftName, setDraftName] = useState('');
-  const [draftVoiceId, setDraftVoiceId] = useState('');
-
   const isOpenAI = isOpenAIVoice(voiceStack.voice);
-
-  const saveDraft = () => {
-    const name = draftName.trim();
-    const id = draftVoiceId.trim();
-    if (!name || !id) return;
-    const added = onAddCustomVoice(name, id);
-    setDraftName('');
-    setDraftVoiceId('');
-    setAdding(false);
-    // Auto-select the newly added voice
-    onVoiceStack({ ...voiceStack, voice: added.voiceId, model: parentModel });
-  };
 
   const switchToOpenAI = () => {
     onVoiceStack({
@@ -584,9 +537,6 @@ function VoiceModelRow({
         voice: customVoices[0].voiceId,
         model: parentModel,
       });
-    } else {
-      // No custom voices yet → open the Add modal directly
-      setAdding(true);
     }
   };
 
@@ -643,121 +593,48 @@ function VoiceModelRow({
         </div>
       ) : (
         <div className="space-y-2 pt-2">
-          <div className="grid grid-cols-[1fr_auto_auto] gap-3 items-end">
+          <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
             <div>
-              <label className="block text-sm text-slate-600 mb-1.5">Custom voice</label>
+              <label className="block text-sm text-slate-600 mb-1.5">Voice</label>
               <select
                 value={voiceStack.voice}
                 onChange={(e) => onVoiceStack({ ...voiceStack, voice: e.target.value })}
                 className="w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
               >
-                {customVoices.length === 0 ? (
-                  <option value="">— no custom voices yet —</option>
-                ) : (
-                  customVoices.map((cv) => (
-                    <option key={cv.id} value={cv.voiceId}>
-                      {cv.name}
-                      {cv.accent ? ` (${cv.accent})` : ''}
-                    </option>
-                  ))
-                )}
+                <optgroup label="Female">
+                  {customVoices
+                    .filter((cv) => cv.gender === 'female')
+                    .map((cv) => (
+                      <option key={cv.id} value={cv.voiceId}>
+                        {cv.name}
+                        {cv.accent ? ` (${cv.accent})` : ''}
+                      </option>
+                    ))}
+                </optgroup>
+                <optgroup label="Male">
+                  {customVoices
+                    .filter((cv) => cv.gender === 'male')
+                    .map((cv) => (
+                      <option key={cv.id} value={cv.voiceId}>
+                        {cv.name}
+                        {cv.accent ? ` (${cv.accent})` : ''}
+                      </option>
+                    ))}
+                </optgroup>
               </select>
             </div>
             <button
-              onClick={() => setAdding(true)}
-              className="px-3 py-2 text-sm font-medium border border-slate-300 rounded-md hover:bg-slate-50 whitespace-nowrap"
-              title="Add a new ElevenLabs custom voice"
-            >
-              + Add custom voice
-            </button>
-            <button
               onClick={onTestVoice}
-              disabled={customVoices.length === 0}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-botscrew-500 hover:bg-botscrew-600 text-white rounded-md whitespace-nowrap shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-botscrew-500 hover:bg-botscrew-600 text-white rounded-md whitespace-nowrap shadow-sm"
               title="Test using ElevenLabs Conversational AI"
             >
               <Phone className="h-3.5 w-3.5" strokeWidth={2} />
               Test Voice AI
             </button>
           </div>
-
-          <div className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-md px-3 py-2 flex items-start gap-2">
-            <span>ⓘ</span>
-            <div className="flex-1">
-              <strong className="text-ink-900">LLM is set on the ElevenLabs agent.</strong> Edit
-              the agent in{' '}
-              <a
-                href="https://elevenlabs.io/app/conversational-ai"
-                target="_blank"
-                rel="noreferrer"
-                className="text-botscrew-500 hover:underline"
-              >
-                ElevenLabs → Conversational AI
-              </a>{' '}
-              to change which LLM powers responses. Transcription is handled internally — no
-              separate STT model.
-            </div>
-          </div>
-
-          {customVoices.length > 0 && (() => {
-            const found = customVoices.find((cv) => cv.voiceId === voiceStack.voice);
-            return (
-              <div className="text-[11px] text-slate-400">
-                Active voice_id:{' '}
-                <code className="font-mono text-slate-600">{voiceStack.voice}</code>
-                {found?.accent && (
-                  <>
-                    {' · '}
-                    <span className="text-slate-500">🌍 {found.accent} accent</span>
-                  </>
-                )}
-                {found?.prebaked && (
-                  <>
-                    {' · '}
-                    <span className="text-slate-500">GSB curated</span>
-                  </>
-                )}
-                {found && !found.prebaked && (
-                  <>
-                    {' · '}
-                    <button
-                      onClick={() => {
-                        if (confirm(`Remove "${found.name}"?`)) {
-                          onRemoveCustomVoice(found.id);
-                          const remaining = customVoices.filter((cv) => cv.id !== found.id);
-                          if (remaining.length > 0) {
-                            onVoiceStack({ ...voiceStack, voice: remaining[0].voiceId });
-                          } else {
-                            switchToOpenAI();
-                          }
-                        }
-                      }}
-                      className="text-slate-500 hover:text-danger underline"
-                    >
-                      remove this custom voice
-                    </button>
-                  </>
-                )}
-              </div>
-            );
-          })()}
         </div>
       )}
 
-      {adding && (
-        <AddCustomVoiceModal
-          onClose={() => {
-            setAdding(false);
-            setDraftName('');
-            setDraftVoiceId('');
-          }}
-          name={draftName}
-          voiceId={draftVoiceId}
-          onNameChange={setDraftName}
-          onVoiceIdChange={setDraftVoiceId}
-          onSave={saveDraft}
-        />
-      )}
     </div>
   );
 }
@@ -792,247 +669,6 @@ function ProviderTab({
   );
 }
 
-function AddCustomVoiceModal({
-  onClose,
-  name,
-  voiceId,
-  onNameChange,
-  onVoiceIdChange,
-  onSave,
-}: {
-  onClose: () => void;
-  name: string;
-  voiceId: string;
-  onNameChange: (v: string) => void;
-  onVoiceIdChange: (v: string) => void;
-  onSave: () => void;
-}) {
-  const [apiKey, setApiKeyDraft] = useState(getElevenLabsApiKey());
-  const [agentId, setAgentIdDraft] = useState(getElevenLabsAgentId());
-  const [showCredsEdit, setShowCredsEdit] = useState(!isElevenLabsConfigured());
-  const connected = isElevenLabsConfigured() && !showCredsEdit;
-
-  const credsValid = apiKey.trim() && agentId.trim();
-  const canSave = name.trim() && voiceId.trim() && (connected || credsValid);
-
-  const handleSave = () => {
-    if (showCredsEdit && credsValid) {
-      setElevenLabsApiKey(apiKey);
-      setElevenLabsAgentId(agentId);
-    }
-    onSave();
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/40 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col overflow-hidden max-h-[90vh]"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-ink-900">Add custom voice</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              ElevenLabs voice. All values stored in this browser's localStorage only.
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-ink-900 rounded-md p-1 hover:bg-slate-100"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" strokeWidth={2} />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {/* Connection section */}
-          <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/60">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <KeyRound className="h-3.5 w-3.5 text-slate-500" strokeWidth={1.75} />
-                <span className="text-xs font-semibold text-ink-900 uppercase tracking-wider">
-                  ElevenLabs Connection
-                </span>
-                {connected && (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-success font-medium">
-                    <Check className="h-3 w-3" strokeWidth={2.5} /> connected
-                  </span>
-                )}
-              </div>
-              {connected ? (
-                <button
-                  onClick={() => setShowCredsEdit(true)}
-                  className="text-[11px] text-botscrew-500 hover:underline font-medium"
-                >
-                  edit
-                </button>
-              ) : isElevenLabsConfigured() ? (
-                <button
-                  onClick={() => setShowCredsEdit(false)}
-                  className="text-[11px] text-slate-500 hover:text-ink-900"
-                >
-                  cancel edit
-                </button>
-              ) : null}
-            </div>
-
-            {showCredsEdit ? (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-[11px] text-slate-500 mb-1 font-medium">
-                    API Key
-                  </label>
-                  <input
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKeyDraft(e.target.value)}
-                    placeholder="sk_..."
-                    className="w-full text-sm font-mono px-3 py-2 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
-                  />
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    From{' '}
-                    <a
-                      href="https://elevenlabs.io/app/settings/api-keys"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-botscrew-500 hover:underline"
-                    >
-                      Settings → API Keys
-                    </a>
-                    .
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-slate-500 mb-1 font-medium">
-                    Agent ID
-                  </label>
-                  <input
-                    type="text"
-                    value={agentId}
-                    onChange={(e) => setAgentIdDraft(e.target.value)}
-                    placeholder="paste agent_id"
-                    className="w-full text-sm font-mono px-3 py-2 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
-                  />
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    From{' '}
-                    <a
-                      href="https://elevenlabs.io/app/conversational-ai"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-botscrew-500 hover:underline"
-                    >
-                      Conversational AI → Agents
-                    </a>
-                    . The agent must have "Allow overrides" enabled.
-                  </p>
-                </div>
-
-                {isElevenLabsConfigured() && (
-                  <button
-                    onClick={() => {
-                      if (confirm('Disconnect ElevenLabs from this browser?')) {
-                        clearElevenLabsCreds();
-                        setApiKeyDraft('');
-                        setAgentIdDraft('');
-                      }
-                    }}
-                    className="text-[11px] text-slate-500 hover:text-danger underline"
-                  >
-                    forget current creds
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="text-[11px] text-slate-500">
-                API key + Agent ID saved. <em>Click "edit" above to change them.</em>
-              </div>
-            )}
-          </div>
-
-          {/* Voice section */}
-          <div className="px-5 py-4 space-y-4">
-            <div className="text-xs font-semibold text-ink-900 uppercase tracking-wider">
-              Voice
-            </div>
-
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5 font-medium">
-                Display name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => onNameChange(e.target.value)}
-                placeholder="JH Brand Voice"
-                autoFocus
-                className="w-full text-sm px-3 py-2 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
-              />
-              <p className="text-[11px] text-slate-400 mt-1">
-                How it appears in the Voice dropdown.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5 font-medium">
-                voice_id
-              </label>
-              <input
-                type="text"
-                value={voiceId}
-                onChange={(e) => onVoiceIdChange(e.target.value)}
-                placeholder="e.g. pNInz6obpgDQGcFmaJgB"
-                className="w-full text-sm font-mono px-3 py-2 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
-              />
-              <p className="text-[11px] text-slate-400 mt-1">
-                From{' '}
-                <a
-                  href="https://elevenlabs.io/app/voice-library"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-botscrew-500 hover:underline"
-                >
-                  Voice Library
-                </a>{' '}
-                — click a voice → copy ID. (Adam default:{' '}
-                <code className="font-mono">pNInz6obpgDQGcFmaJgB</code>)
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-5 py-3 border-t border-slate-200 flex items-center justify-between gap-2 bg-slate-50">
-          <div className="text-[11px] text-slate-500">
-            {!connected && !credsValid
-              ? '⚠ ElevenLabs connection needed before saving'
-              : connected
-                ? '✓ Ready to save'
-                : '✓ Will save voice + connect ElevenLabs'}
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-ink-900"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!canSave}
-              className="px-4 py-1.5 text-sm font-medium bg-action-500 hover:bg-action-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {connected ? 'Add voice' : 'Save voice + connect'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function FieldDropdown({
   label,

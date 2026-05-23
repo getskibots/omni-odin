@@ -51,26 +51,27 @@ export interface CustomVoice {
   id: string;          // local UI id
   name: string;        // display name in the dropdown
   voiceId: string;     // ElevenLabs voice_id
-  prebaked?: boolean;  // true = ships with omni, can't be removed by users
-  accent?: string;     // e.g. "Kiwi", "American", "British" — surfaced as a small badge
+  gender: 'female' | 'male';
+  prebaked?: boolean;  // true = ships with omni
+  accent?: string;     // e.g. "Kiwi" — surfaced as a small badge / suffix
 }
 
 /**
  * GSB-curated default voices that ship with omni. Every operator sees these
- * in the Custom Voices dropdown without setup. All voice_ids are cloned
+ * in the Custom Voices dropdown grouped by gender. All voice_ids are cloned
  * in the GSB ElevenLabs workspace.
  */
 export const PREBAKED_CUSTOM_VOICES: CustomVoice[] = [
   // Female
-  { id: 'pre-sierra', name: 'Sierra', voiceId: '0xibdd3BNglACBXTeQoJ', prebaked: true },
-  { id: 'pre-winter', name: 'Winter', voiceId: 'p1ZXM5QbQ5JtHpWB7n5M', prebaked: true },
-  { id: 'pre-autumn', name: 'Autumn', voiceId: 'ihescI8y0lnM6ikMAyGZ', prebaked: true },
+  { id: 'pre-autumn', name: 'Autumn', voiceId: 'ihescI8y0lnM6ikMAyGZ', gender: 'female', prebaked: true },
+  { id: 'pre-sierra', name: 'Sierra', voiceId: '0xibdd3BNglACBXTeQoJ', gender: 'female', prebaked: true },
+  { id: 'pre-winter', name: 'Winter', voiceId: 'p1ZXM5QbQ5JtHpWB7n5M', gender: 'female', prebaked: true },
   // Male
-  { id: 'pre-sonny', name: 'Sonny', voiceId: 'HhwfzJctzawQF7G6zlbo', prebaked: true },
-  { id: 'pre-stone', name: 'Stone', voiceId: 'xUaP8oqnE6ERbbFQObbz', prebaked: true },
-  { id: 'pre-hawk', name: 'Hawk', voiceId: '2J5a0tOuiJLPoVd4xC8w', prebaked: true },
-  { id: 'pre-forest', name: 'Forest', voiceId: '2u5AAMHdRp6fmmqDm2kq', prebaked: true },
-  { id: 'pre-river', name: 'River', voiceId: '9tGUFJVKv4fLO52eYj4h', prebaked: true, accent: 'Kiwi' },
+  { id: 'pre-forest', name: 'Forest', voiceId: '2u5AAMHdRp6fmmqDm2kq', gender: 'male', prebaked: true },
+  { id: 'pre-hawk', name: 'Hawk', voiceId: '2J5a0tOuiJLPoVd4xC8w', gender: 'male', prebaked: true },
+  { id: 'pre-river', name: 'River', voiceId: '9tGUFJVKv4fLO52eYj4h', gender: 'male', prebaked: true, accent: 'Kiwi' },
+  { id: 'pre-sonny', name: 'Sonny', voiceId: 'HhwfzJctzawQF7G6zlbo', gender: 'male', prebaked: true },
+  { id: 'pre-stone', name: 'Stone', voiceId: 'xUaP8oqnE6ERbbFQObbz', gender: 'male', prebaked: true },
 ];
 
 export function isOpenAIVoice(voice: string): boolean {
@@ -79,10 +80,9 @@ export function isOpenAIVoice(voice: string): boolean {
 
 const CUSTOM_VOICES_KEY = 'omni.custom_voices';
 
-/** Returns prebaked + user-added voices, merged. Prebaked always come first. */
+/** Returns the GSB-curated prebaked voice list. */
 export function loadCustomVoices(): CustomVoice[] {
-  const user = loadUserCustomVoices();
-  return [...PREBAKED_CUSTOM_VOICES, ...user];
+  return [...PREBAKED_CUSTOM_VOICES];
 }
 
 /** User-added voices only (from localStorage). */
