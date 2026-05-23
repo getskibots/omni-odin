@@ -65,14 +65,14 @@ export const PREBAKED_CUSTOM_VOICES: CustomVoice[] = [
   // Female
   { id: 'pre-autumn', name: 'Autumn', voiceId: 'ihescI8y0lnM6ikMAyGZ', gender: 'female', prebaked: true },
   { id: 'pre-sierra', name: 'Sierra', voiceId: '0xibdd3BNglACBXTeQoJ', gender: 'female', prebaked: true },
+  { id: 'pre-sonny', name: 'Sonny', voiceId: 'HhwfzJctzawQF7G6zlbo', gender: 'female', prebaked: true },
   { id: 'pre-winter', name: 'Winter', voiceId: 'p1ZXM5QbQ5JtHpWB7n5M', gender: 'female', prebaked: true },
   // Male
-  { id: 'pre-brandon', name: 'Brandon', voiceId: 'LpnwrzbZy984kxCzwufi', gender: 'male', prebaked: true },
   { id: 'pre-forest', name: 'Forest', voiceId: '2u5AAMHdRp6fmmqDm2kq', gender: 'male', prebaked: true },
   { id: 'pre-hawk', name: 'Hawk', voiceId: '2J5a0tOuiJLPoVd4xC8w', gender: 'male', prebaked: true },
   { id: 'pre-river', name: 'River', voiceId: '9tGUFJVKv4fLO52eYj4h', gender: 'male', prebaked: true, accent: 'Kiwi' },
-  { id: 'pre-sonny', name: 'Sonny', voiceId: 'HhwfzJctzawQF7G6zlbo', gender: 'male', prebaked: true },
   { id: 'pre-stone', name: 'Stone', voiceId: 'xUaP8oqnE6ERbbFQObbz', gender: 'male', prebaked: true },
+  { id: 'pre-brandon', name: 'Brandon', voiceId: 'LpnwrzbZy984kxCzwufi', gender: 'male', prebaked: true },
 ];
 
 export function isOpenAIVoice(voice: string): boolean {
