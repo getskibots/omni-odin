@@ -14,6 +14,7 @@ import {
   PhoneOff,
 } from 'lucide-react';
 import type { VoiceStack } from '../data/parent';
+import { isOpenAIVoice } from '../data/parent';
 import {
   runChannelTest,
   speakText,
@@ -31,6 +32,16 @@ import {
   type ConnectionState,
   type RealtimeSession,
 } from '../lib/realtimeVoice';
+import {
+  startElevenLabsSession,
+  isElevenLabsConfigured,
+  getElevenLabsApiKey,
+  getElevenLabsAgentId,
+  setElevenLabsApiKey,
+  setElevenLabsAgentId,
+  clearElevenLabsCreds,
+  type ElevenLabsSession,
+} from '../lib/elevenLabsVoice';
 
 interface UiMessage {
   id: string;
@@ -89,10 +100,31 @@ export default function TestVoiceModal({
   const [keyInput, setKeyInput] = useState('');
   const [rtState, setRtState] = useState<ConnectionState>('idle');
   const rtSessionRef = useRef<RealtimeSession | null>(null);
+  const elSessionRef = useRef<ElevenLabsSession | null>(null);
   const botMsgIdRef = useRef<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isVoice = channel === 'voice';
+  const usesElevenLabs = isVoice && !isOpenAIVoice(voiceStack.voice);
+  const [elConfigured, setElConfigured] = useState(isElevenLabsConfigured());
+  const [showElKeyInput, setShowElKeyInput] = useState(false);
+  const [elApiKeyDraft, setElApiKeyDraft] = useState(getElevenLabsApiKey());
+  const [elAgentIdDraft, setElAgentIdDraft] = useState(getElevenLabsAgentId());
+
+  const saveElCreds = () => {
+    if (!elApiKeyDraft.trim() || !elAgentIdDraft.trim()) return;
+    setElevenLabsApiKey(elApiKeyDraft);
+    setElevenLabsAgentId(elAgentIdDraft);
+    setElConfigured(true);
+    setShowElKeyInput(false);
+  };
+
+  const forgetElCreds = () => {
+    clearElevenLabsCreds();
+    setElApiKeyDraft('');
+    setElAgentIdDraft('');
+    setElConfigured(false);
+  };
   const ChannelIcon = isVoice ? Phone : MessageCircle;
   const title = isVoice ? 'Test Voice AI' : 'Test Chat AI';
   const subtitle = isVoice
@@ -189,18 +221,29 @@ export default function TestVoiceModal({
     return () => clearInterval(interval);
   }, [playingId]);
 
-  // ─── Voice-mode realtime session ──────────────────────────────────────────
+  // ─── Voice-mode realtime session (routes by provider) ─────────────────────
   const startRealtime = async () => {
+    if (usesElevenLabs) {
+      if (!elConfigured) {
+        setShowElKeyInput(true);
+        return;
+      }
+      return startElevenLabs();
+    }
     if (!apiConnected) {
       setShowKeyInput(true);
       return;
     }
+    return startOpenAIRealtime();
+  };
+
+  const startOpenAIRealtime = async () => {
     setError(null);
     setMessages([
       {
         id: id(),
         from: 'bot',
-        text: 'Connecting… allow microphone access if prompted.',
+        text: 'Connecting via OpenAI Realtime… allow microphone access if prompted.',
       },
     ]);
     botMsgIdRef.current = null;
@@ -221,10 +264,7 @@ export default function TestVoiceModal({
               const currentBotId = botMsgIdRef.current;
               const last = prev[prev.length - 1];
               if (currentBotId && last?.id === currentBotId) {
-                return [
-                  ...prev.slice(0, -1),
-                  { ...last, text: last.text + delta },
-                ];
+                return [...prev.slice(0, -1), { ...last, text: last.text + delta }];
               }
               const newId = id();
               botMsgIdRef.current = newId;
@@ -256,9 +296,54 @@ export default function TestVoiceModal({
     }
   };
 
+  const startElevenLabs = async () => {
+    setError(null);
+    setMessages([
+      {
+        id: id(),
+        from: 'bot',
+        text: 'Connecting via ElevenLabs… allow microphone access if prompted.',
+      },
+    ]);
+
+    try {
+      const session = await startElevenLabsSession({
+        voiceId: voiceStack.voice,
+        systemPrompt,
+        handlers: {
+          onState: (s) => setRtState(s),
+          onUserTranscript: (text) => {
+            setMessages((prev) => [...prev, { id: id(), from: 'user', text }]);
+          },
+          onBotMessage: (text) => {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: id(),
+                from: 'bot',
+                text,
+                violations: detectViolations(text, 'voice'),
+              },
+            ]);
+          },
+          onError: (msg) => {
+            setError(msg);
+            setRtState('error');
+          },
+        },
+      });
+      elSessionRef.current = session;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to start ElevenLabs session');
+      setRtState('error');
+    }
+  };
+
   const stopRealtime = () => {
     rtSessionRef.current?.stop();
     rtSessionRef.current = null;
+    elSessionRef.current?.stop();
+    elSessionRef.current = null;
     setRtState('idle');
   };
 
@@ -309,7 +394,32 @@ export default function TestVoiceModal({
             </>
           )}
           <span className="ml-auto inline-flex items-center gap-1.5">
-            {apiConnected ? (
+            {usesElevenLabs ? (
+              elConfigured ? (
+                <>
+                  <CheckCircle2 className="h-3 w-3 text-success" strokeWidth={2} />
+                  <span className="text-success font-medium">ElevenLabs</span>
+                  <button
+                    onClick={forgetElCreds}
+                    className="ml-1 text-[10px] text-slate-400 hover:text-danger underline"
+                    title="Remove ElevenLabs API key + agent ID from this browser"
+                  >
+                    forget creds
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3 w-3 text-amber-500" strokeWidth={2} />
+                  <span className="text-amber-600 font-medium">ElevenLabs not connected</span>
+                  <button
+                    onClick={() => setShowElKeyInput(true)}
+                    className="ml-1 text-[10px] text-botscrew-500 hover:underline font-medium"
+                  >
+                    connect →
+                  </button>
+                </>
+              )
+            ) : apiConnected ? (
               <>
                 <CheckCircle2 className="h-3 w-3 text-success" strokeWidth={2} />
                 <span className="text-success font-medium">Live LLM</span>
@@ -335,6 +445,65 @@ export default function TestVoiceModal({
             )}
           </span>
         </div>
+
+        {showElKeyInput && (
+          <div className="px-5 py-3 bg-amber-50 border-b border-amber-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-ink-900 font-semibold">
+                Connect ElevenLabs (API key + agent ID)
+              </div>
+              <button
+                onClick={() => setShowElKeyInput(false)}
+                className="text-slate-400 hover:text-ink-900 text-xs"
+              >
+                cancel
+              </button>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              Both stored in this browser's localStorage only. Find them at{' '}
+              <a
+                href="https://elevenlabs.io/app/conversational-ai"
+                target="_blank"
+                rel="noreferrer"
+                className="text-botscrew-500 hover:underline"
+              >
+                elevenlabs.io → Conversational AI → Agents
+              </a>{' '}
+              and Settings → API Keys.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[11px] text-slate-500 mb-1">API Key</label>
+                <input
+                  type="password"
+                  value={elApiKeyDraft}
+                  onChange={(e) => setElApiKeyDraft(e.target.value)}
+                  placeholder="xi-..."
+                  className="w-full text-sm font-mono px-2 py-1.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-slate-500 mb-1">Agent ID</label>
+                <input
+                  type="text"
+                  value={elAgentIdDraft}
+                  onChange={(e) => setElAgentIdDraft(e.target.value)}
+                  placeholder="paste agent_id"
+                  className="w-full text-sm font-mono px-2 py-1.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end">
+              <button
+                onClick={saveElCreds}
+                disabled={!elApiKeyDraft.trim() || !elAgentIdDraft.trim()}
+                className="px-3 py-1.5 text-xs font-medium bg-botscrew-500 hover:bg-botscrew-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Save & connect
+              </button>
+            </div>
+          </div>
+        )}
 
         {showKeyInput && !apiConnected && (
           <div className="px-5 py-3 bg-botscrew-50 border-b border-botscrew-200 space-y-2">
@@ -418,9 +587,17 @@ export default function TestVoiceModal({
             {rtState === 'idle' || rtState === 'error' ? (
               <button
                 onClick={startRealtime}
-                disabled={!apiConnected}
+                disabled={usesElevenLabs ? !elConfigured : !apiConnected}
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-success hover:bg-success/90 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                title={apiConnected ? 'Start a realtime voice session' : 'Connect API key first'}
+                title={
+                  usesElevenLabs
+                    ? elConfigured
+                      ? 'Start an ElevenLabs Conversational AI session'
+                      : 'Connect ElevenLabs first'
+                    : apiConnected
+                      ? 'Start an OpenAI realtime session'
+                      : 'Connect OpenAI API key first'
+                }
               >
                 <Phone className="h-4 w-4" strokeWidth={2} />
                 Start call
