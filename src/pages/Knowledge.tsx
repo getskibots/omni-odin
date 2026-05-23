@@ -15,7 +15,7 @@ import { LayerIcon } from '../components/LayerIcon';
 import TemplateForm from '../components/TemplateForm';
 import TestVoiceModal from '../components/TestVoiceModal';
 import AssembledPreviewModal from '../components/AssembledPreviewModal';
-import { ChevronsRight, Phone, MessageCircle } from 'lucide-react';
+import { ChevronsRight, Phone, MessageCircle, X } from 'lucide-react';
 
 type KnowledgeSection = 'instructions' | 'text-edits' | 'files' | 'website';
 
@@ -602,57 +602,7 @@ function VoiceModelRow({
         <div className="text-xs text-slate-500 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
           <strong className="text-ink-900">Custom voice (ElevenLabs).</strong> Realtime calls route
           through ElevenLabs Conversational AI. Transcription is handled internally — no separate
-          STT model. <em>(Live wiring in next commit; UI is set up.)</em>
-        </div>
-      )}
-
-      {adding && (
-        <div className="bg-slate-50 border border-slate-200 rounded-md p-3 space-y-2">
-          <div className="text-sm font-semibold text-ink-900">Add custom voice</div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-[11px] text-slate-500 mb-1">Display name</label>
-              <input
-                type="text"
-                value={draftName}
-                onChange={(e) => setDraftName(e.target.value)}
-                placeholder="JH Brand Voice"
-                autoFocus
-                className="w-full text-sm px-2 py-1.5 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] text-slate-500 mb-1">
-                ElevenLabs voice_id
-              </label>
-              <input
-                type="text"
-                value={draftVoiceId}
-                onChange={(e) => setDraftVoiceId(e.target.value)}
-                placeholder="paste from ElevenLabs dashboard"
-                className="w-full text-sm font-mono px-2 py-1.5 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
-              />
-            </div>
-          </div>
-          <div className="flex items-center justify-end gap-2">
-            <button
-              onClick={() => {
-                setAdding(false);
-                setDraftName('');
-                setDraftVoiceId('');
-              }}
-              className="px-2.5 py-1 text-xs text-slate-500 hover:text-ink-900"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={saveDraft}
-              disabled={!draftName.trim() || !draftVoiceId.trim()}
-              className="px-3 py-1 text-xs font-medium bg-action-500 hover:bg-action-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Add voice
-            </button>
-          </div>
+          STT model.
         </div>
       )}
 
@@ -673,6 +623,123 @@ function VoiceModelRow({
           </button>
         </div>
       )}
+
+      {adding && (
+        <AddCustomVoiceModal
+          onClose={() => {
+            setAdding(false);
+            setDraftName('');
+            setDraftVoiceId('');
+          }}
+          name={draftName}
+          voiceId={draftVoiceId}
+          onNameChange={setDraftName}
+          onVoiceIdChange={setDraftVoiceId}
+          onSave={saveDraft}
+        />
+      )}
+    </div>
+  );
+}
+
+function AddCustomVoiceModal({
+  onClose,
+  name,
+  voiceId,
+  onNameChange,
+  onVoiceIdChange,
+  onSave,
+}: {
+  onClose: () => void;
+  name: string;
+  voiceId: string;
+  onNameChange: (v: string) => void;
+  onVoiceIdChange: (v: string) => void;
+  onSave: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-ink-900">Add custom voice</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              ElevenLabs voice you've cloned or selected. Stored per-browser only.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-ink-900 rounded-md p-1 hover:bg-slate-100"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" strokeWidth={2} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="block text-xs text-slate-500 mb-1.5 font-medium">Display name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder="JH Brand Voice"
+              autoFocus
+              className="w-full text-sm px-3 py-2 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">
+              How it appears in the Voice dropdown.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs text-slate-500 mb-1.5 font-medium">
+              ElevenLabs voice_id
+            </label>
+            <input
+              type="text"
+              value={voiceId}
+              onChange={(e) => onVoiceIdChange(e.target.value)}
+              placeholder="e.g. 21m00Tcm4TlvDq8ikWAM"
+              className="w-full text-sm font-mono px-3 py-2 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Find at{' '}
+              <a
+                href="https://elevenlabs.io/app/voice-library"
+                target="_blank"
+                rel="noreferrer"
+                className="text-botscrew-500 hover:underline"
+              >
+                elevenlabs.io → Voice Library
+              </a>{' '}
+              (your clones + their library). Click a voice → copy ID.
+            </p>
+          </div>
+        </div>
+
+        <div className="px-5 py-3 border-t border-slate-200 flex items-center justify-end gap-2 bg-slate-50">
+          <button
+            onClick={onClose}
+            className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-ink-900"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onSave}
+            disabled={!name.trim() || !voiceId.trim()}
+            className="px-4 py-1.5 text-sm font-medium bg-action-500 hover:bg-action-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Add voice
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
