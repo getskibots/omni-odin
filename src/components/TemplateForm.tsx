@@ -51,8 +51,17 @@ function newId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export default function TemplateForm() {
-  const [template, setTemplate] = useState<ResortTemplate>(jacksonHole.template);
+interface TemplateFormProps {
+  template?: ResortTemplate;
+  onChange?: (t: ResortTemplate) => void;
+}
+
+export default function TemplateForm({ template: templateProp, onChange }: TemplateFormProps = {}) {
+  const [internalTemplate, setInternalTemplate] = useState<ResortTemplate>(jacksonHole.template);
+  // Controlled when both props are provided; otherwise fall back to internal state.
+  const controlled = templateProp !== undefined && onChange !== undefined;
+  const template = controlled ? templateProp! : internalTemplate;
+  const setTemplate = controlled ? onChange! : setInternalTemplate;
   const [boilerplateOpen, setBoilerplateOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [addingSection, setAddingSection] = useState(false);

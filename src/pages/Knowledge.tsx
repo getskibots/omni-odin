@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import {
   jacksonHole,
+  renderTemplate,
   PARENT_MODEL_OPTIONS,
   VOICE_MODEL_OPTIONS,
   VOICE_VOICE_OPTIONS,
   VOICE_TRANSCRIPTION_OPTIONS,
 } from '../data/parent';
-import type { LayerId, VoiceStack } from '../data/parent';
+import type { LayerId, VoiceStack, ResortTemplate } from '../data/parent';
 import { LayerIcon } from '../components/LayerIcon';
 import TemplateForm from '../components/TemplateForm';
 import TestVoiceModal from '../components/TestVoiceModal';
@@ -110,6 +111,14 @@ function Instructions() {
   const [activeLayer, setActiveLayer] = useState<LayerId>('parent');
   const [parentSubTab, setParentSubTab] = useState<'template' | 'customization'>('template');
   const [testChannel, setTestChannel] = useState<'chat' | 'voice' | null>(null);
+  // Lift Preset (template) state up so the assembled prompt can include it.
+  const [template, setTemplate] = useState<ResortTemplate>(jacksonHole.template);
+
+  // Full assembled Parent prompt = Preset (rendered) + Custom Instructions.
+  const assembledParent = useMemo(
+    () => `${renderTemplate(template)}\n\n${parentPrompt}`,
+    [template, parentPrompt],
+  );
 
   const layers = useMemo(
     () => ({
@@ -166,8 +175,8 @@ function Instructions() {
         chatModel={model}
         systemPrompt={
           testChannel === 'chat'
-            ? `${parentPrompt}\n\n---\n\n${chatPrompt}`
-            : `${parentPrompt}\n\n---\n\n${voicePrompt}`
+            ? `${assembledParent}\n\n---\n\n${chatPrompt}`
+            : `${assembledParent}\n\n---\n\n${voicePrompt}`
         }
       />
 
@@ -196,7 +205,7 @@ function Instructions() {
             />
           </div>
           {parentSubTab === 'template' ? (
-            <TemplateForm />
+            <TemplateForm template={template} onChange={setTemplate} />
           ) : (
             <EditorCard
               value={parentPrompt}
