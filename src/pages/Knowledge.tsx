@@ -6,6 +6,8 @@ import {
   VOICE_MODEL_OPTIONS,
   VOICE_VOICE_OPTIONS,
   VOICE_TRANSCRIPTION_OPTIONS,
+  OPENAI_VOICES_FEMALE,
+  OPENAI_VOICES_MALE,
   isOpenAIVoice,
   loadCustomVoices,
 } from '../data/parent';
@@ -562,12 +564,29 @@ function VoiceModelRow({
             onChange={(v) => onVoiceStack({ ...voiceStack, model: v })}
             options={[...VOICE_MODEL_OPTIONS]}
           />
-          <FieldDropdown
-            label="Voice"
-            value={voiceStack.voice}
-            onChange={(v) => onVoiceStack({ ...voiceStack, voice: v })}
-            options={[...VOICE_VOICE_OPTIONS]}
-          />
+          <div>
+            <label className="block text-sm text-slate-600 mb-1.5">Voice</label>
+            <select
+              value={voiceStack.voice}
+              onChange={(e) => onVoiceStack({ ...voiceStack, voice: e.target.value })}
+              className="w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+            >
+              <optgroup label="Female">
+                {OPENAI_VOICES_FEMALE.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Male">
+                {OPENAI_VOICES_MALE.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
+          </div>
           <FieldDropdown
             label="Transcription"
             value={voiceStack.transcriptionModel}

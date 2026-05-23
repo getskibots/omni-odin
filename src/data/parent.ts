@@ -41,6 +41,9 @@ export const VOICE_VOICE_OPTIONS = [
   'verse',
 ] as const;
 
+export const OPENAI_VOICES_FEMALE = ['coral', 'sage', 'shimmer'] as const;
+export const OPENAI_VOICES_MALE = ['alloy', 'ash', 'ballad', 'echo', 'verse'] as const;
+
 export const VOICE_TRANSCRIPTION_OPTIONS = [
   'whisper-1',
   'gpt-4o-mini-transcribe',
