@@ -135,12 +135,11 @@ export async function startRealtimeSession({
   //   - URL params: model + session[type]
   //   - Full session config (instructions, voice, VAD, transcription) is sent
   //     via the data channel after open.
-  const params = new URLSearchParams({
-    model: REALTIME_MODEL,
-    'session[type]': 'realtime',
-  });
+  // Use literal "session.type" (dots are valid in query keys, no encoding).
+  // Bracket notation (session[type]) gets URL-encoded to %5B/%5D which OpenAI
+  // doesn't parse.
   const sdpResponse = await fetch(
-    `https://api.openai.com/v1/realtime/calls?${params.toString()}`,
+    `https://api.openai.com/v1/realtime/calls?model=${encodeURIComponent(REALTIME_MODEL)}&session.type=realtime`,
     {
       method: 'POST',
       headers: {
