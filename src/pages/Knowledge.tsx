@@ -1243,7 +1243,7 @@ function layerMeta(id: LayerId) {
     case 'chat':
       return {
         title: 'Chat',
-        subtitle: 'Web, Facebook, WhatsApp, SMS. Short-form messaging — appended to the Parent.',
+        subtitle: 'Chat specific instructions, response style and more.',
         hint: 'This override is appended to the Parent when Chat handles a message.',
         placeholder: 'Add chat-specific rules…',
       };
@@ -1257,7 +1257,7 @@ function layerMeta(id: LayerId) {
     case 'email':
       return {
         title: 'Email',
-        subtitle: 'Inbound + outbound email. Long-form, threaded — appended to the Parent.',
+        subtitle: 'Email specific instructions, signature and more.',
         hint: 'This override is appended to the Parent when Email handles a message.',
         placeholder: 'Add email-specific rules…',
       };
