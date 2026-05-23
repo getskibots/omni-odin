@@ -79,6 +79,7 @@ interface Props {
   systemPrompt: string;
   voiceStack: VoiceStack;
   chatModel?: string;
+  welcomeMessage?: string;
 }
 
 export default function TestVoiceModal({
@@ -88,6 +89,7 @@ export default function TestVoiceModal({
   systemPrompt,
   voiceStack,
   chatModel,
+  welcomeMessage,
 }: Props) {
   const [messages, setMessages] = useState<UiMessage[]>([SEEDS[channel]]);
   const [input, setInput] = useState('');
@@ -310,6 +312,7 @@ export default function TestVoiceModal({
       const session = await startElevenLabsSession({
         voiceId: voiceStack.voice,
         systemPrompt,
+        firstMessage: welcomeMessage,
         handlers: {
           onState: (s) => setRtState(s),
           onUserTranscript: (text) => {

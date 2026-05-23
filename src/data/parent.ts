@@ -17,6 +17,7 @@ export interface ChannelLayer {
   connectors?: string[];
   overridePrompt: string;
   overrideLimit: number;
+  welcomeMessage?: string;
   voiceStack?: VoiceStack;
 }
 
@@ -942,6 +943,7 @@ export const jacksonHole: ParentSummary = {
       wiring: 'Twilio: +1 307·284·5392',
       overridePrompt: VOICE_OVERRIDE,
       overrideLimit: 2500,
+      welcomeMessage: 'Welcome to Jackson Hole! How can we help you today?',
       voiceStack: {
         model: 'voice-realtime-2.0',
         voice: 'ash',

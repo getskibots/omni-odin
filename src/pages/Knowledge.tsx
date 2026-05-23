@@ -117,6 +117,7 @@ interface PersistedState {
   parentPrompt: string;
   chatPrompt: string;
   voicePrompt: string;
+  voiceWelcome: string;
   emailPrompt: string;
   voiceStack: VoiceStack;
   model: string;
@@ -146,6 +147,9 @@ function Instructions() {
   );
   const [voicePrompt, setVoicePrompt] = useState(
     persisted?.voicePrompt ?? voiceChannel.overridePrompt,
+  );
+  const [voiceWelcome, setVoiceWelcome] = useState(
+    persisted?.voiceWelcome ?? voiceChannel.welcomeMessage ?? '',
   );
   const [emailPrompt, setEmailPrompt] = useState(
     persisted?.emailPrompt ?? jacksonHole.channels[2].overridePrompt,
@@ -190,6 +194,7 @@ function Instructions() {
       parentPrompt,
       chatPrompt,
       voicePrompt,
+      voiceWelcome,
       emailPrompt,
       voiceStack,
       model,
@@ -272,10 +277,15 @@ function Instructions() {
         channel={testChannel ?? 'voice'}
         voiceStack={voiceStack}
         chatModel={model}
+        welcomeMessage={testChannel === 'voice' ? voiceWelcome : undefined}
         systemPrompt={
           testChannel === 'chat'
             ? `${assembledParent}\n\n---\n\n${chatPrompt}`
-            : `${assembledParent}\n\n---\n\n${voicePrompt}`
+            : `${assembledParent}\n\n---\n\n${voicePrompt}${
+                voiceWelcome.trim()
+                  ? `\n\nOpen every call with exactly this greeting before anything else: "${voiceWelcome.trim()}"`
+                  : ''
+              }`
         }
       />
 
@@ -299,6 +309,39 @@ function Instructions() {
         </h3>
         <p className="text-sm text-slate-500 mt-1">{activeMeta.subtitle}</p>
       </div>
+
+      {activeLayer === 'voice' && (
+        <div className="bg-white border border-slate-200 rounded-xl shadow-card">
+          <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-base">👋</span>
+              <div>
+                <div className="text-sm font-semibold text-ink-900">Welcome message</div>
+                <p className="text-xs text-slate-500">
+                  First thing the bot says when a call connects. Sent as ElevenLabs
+                  <code className="mx-1 font-mono">firstMessage</code> override · injected into the
+                  OpenAI Realtime prompt as the opening line.
+                </p>
+              </div>
+            </div>
+            <span className="text-xs text-slate-400 font-mono">
+              {voiceWelcome.length} chars
+            </span>
+          </div>
+          <div className="p-4">
+            <input
+              type="text"
+              value={voiceWelcome}
+              onChange={(e) => setVoiceWelcome(e.target.value)}
+              placeholder="Welcome to Jackson Hole! How can we help today?"
+              className="w-full text-sm px-3 py-2 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+            />
+            <p className="text-[11px] text-slate-400 mt-1.5">
+              Leave empty to let the bot wait for the caller to speak first.
+            </p>
+          </div>
+        </div>
+      )}
 
       {activeLayer === 'parent' ? (
         <>

@@ -94,10 +94,12 @@ async function fetchSignedUrl(apiKey: string, agentId: string): Promise<string> 
 export async function startElevenLabsSession({
   voiceId,
   systemPrompt,
+  firstMessage,
   handlers,
 }: {
   voiceId: string;
   systemPrompt: string;
+  firstMessage?: string;
   handlers: ElevenLabsHandlers;
 }): Promise<ElevenLabsSession> {
   const apiKey = getElevenLabsApiKey();
@@ -123,6 +125,9 @@ export async function startElevenLabsSession({
       overrides: {
         agent: {
           prompt: { prompt: systemPrompt },
+          ...(firstMessage && firstMessage.trim()
+            ? { firstMessage: firstMessage.trim() }
+            : {}),
         },
         tts: {
           voiceId,
