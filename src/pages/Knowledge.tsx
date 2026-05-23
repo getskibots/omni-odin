@@ -556,25 +556,6 @@ function VoiceModelRow({
   const [draftVoiceId, setDraftVoiceId] = useState('');
 
   const isOpenAI = isOpenAIVoice(voiceStack.voice);
-  // When voice is custom (ElevenLabs), the LLM list is the parent-model list
-  // (ElevenLabs supports GPT/Claude/Gemini etc.). When voice is OpenAI realtime,
-  // the model list is the realtime models.
-  const modelOptions = isOpenAI ? [...VOICE_MODEL_OPTIONS] : [...PARENT_MODEL_OPTIONS];
-  const modelLabel = isOpenAI ? 'Model' : 'LLM';
-
-  // If switching to custom voice, swap the model to the parent default so we
-  // don't show "voice-realtime-2.0" against an ElevenLabs voice.
-  const handleVoiceChange = (newVoice: string) => {
-    if (newVoice === '__add_custom__') {
-      setAdding(true);
-      return;
-    }
-    const newIsOpenAI = isOpenAIVoice(newVoice);
-    const newModel = newIsOpenAI
-      ? VOICE_MODEL_OPTIONS[0]
-      : parentModel;
-    onVoiceStack({ ...voiceStack, voice: newVoice, model: newModel });
-  };
 
   const saveDraft = () => {
     const name = draftName.trim();
@@ -588,90 +569,158 @@ function VoiceModelRow({
     onVoiceStack({ ...voiceStack, voice: added.voiceId, model: parentModel });
   };
 
+  const switchToOpenAI = () => {
+    onVoiceStack({
+      ...voiceStack,
+      voice: VOICE_VOICE_OPTIONS[0],
+      model: VOICE_MODEL_OPTIONS[0],
+    });
+  };
+
+  const switchToCustom = () => {
+    if (customVoices.length > 0) {
+      onVoiceStack({
+        ...voiceStack,
+        voice: customVoices[0].voiceId,
+        model: parentModel,
+      });
+    } else {
+      // No custom voices yet → open the Add modal directly
+      setAdding(true);
+    }
+  };
+
   return (
     <div className="space-y-3">
-      <div
-        className={`grid gap-4 items-end ${
-          isOpenAI ? 'grid-cols-[1fr_1fr_1fr_auto]' : 'grid-cols-[1fr_1fr_auto]'
-        }`}
-      >
-        <FieldDropdown
-          label={modelLabel}
-          value={voiceStack.model}
-          onChange={(v) => onVoiceStack({ ...voiceStack, model: v })}
-          options={modelOptions}
+      {/* Provider tab strip */}
+      <div className="border-b border-slate-200 flex items-center gap-1 -mb-px">
+        <ProviderTab
+          active={isOpenAI}
+          onClick={() => !isOpenAI && switchToOpenAI()}
+          label="OpenAI Realtime"
+          subLabel="built-in voices"
         />
-        <div>
-          <label className="block text-sm text-slate-600 mb-1.5">Voice</label>
-          <select
-            value={voiceStack.voice}
-            onChange={(e) => handleVoiceChange(e.target.value)}
-            className="w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
-          >
-            <optgroup label="OpenAI Realtime">
-              {VOICE_VOICE_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </optgroup>
-            <optgroup label="Custom Voices (ElevenLabs)">
-              {customVoices.length === 0 ? (
-                <option disabled value="__empty__">
-                  No custom voices yet
-                </option>
-              ) : (
-                customVoices.map((cv) => (
-                  <option key={cv.id} value={cv.voiceId}>
-                    {cv.name}
-                  </option>
-                ))
-              )}
-              <option value="__add_custom__">+ Add custom voice…</option>
-            </optgroup>
-          </select>
-        </div>
-        {isOpenAI && (
+        <ProviderTab
+          active={!isOpenAI}
+          onClick={() => isOpenAI && switchToCustom()}
+          label="Custom (ElevenLabs)"
+          subLabel={
+            customVoices.length > 0
+              ? `${customVoices.length} voice${customVoices.length === 1 ? '' : 's'}`
+              : 'add a voice'
+          }
+        />
+      </div>
+
+      {isOpenAI ? (
+        <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end pt-2">
           <FieldDropdown
-            label="Transcription Model"
+            label="Realtime Model"
+            value={voiceStack.model}
+            onChange={(v) => onVoiceStack({ ...voiceStack, model: v })}
+            options={[...VOICE_MODEL_OPTIONS]}
+          />
+          <FieldDropdown
+            label="Voice"
+            value={voiceStack.voice}
+            onChange={(v) => onVoiceStack({ ...voiceStack, voice: v })}
+            options={[...VOICE_VOICE_OPTIONS]}
+          />
+          <FieldDropdown
+            label="Transcription"
             value={voiceStack.transcriptionModel}
             onChange={(v) => onVoiceStack({ ...voiceStack, transcriptionModel: v })}
             options={[...VOICE_TRANSCRIPTION_OPTIONS]}
           />
-        )}
-        <button
-          onClick={onTestVoice}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-botscrew-500 hover:bg-botscrew-600 text-white rounded-md whitespace-nowrap shadow-sm"
-          title="Test the voice prompt without placing a phone call"
-        >
-          <Phone className="h-3.5 w-3.5" strokeWidth={2} />
-          Test Voice AI
-        </button>
-      </div>
-
-      {!isOpenAI && (
-        <div className="text-xs text-slate-500 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-          <strong className="text-ink-900">Custom voice (ElevenLabs).</strong> Realtime calls route
-          through ElevenLabs Conversational AI. Transcription is handled internally — no separate
-          STT model.
-        </div>
-      )}
-
-      {customVoices.length > 0 && !isOpenAI && (
-        <div className="text-[11px] text-slate-400">
-          Active: <code className="font-mono text-slate-600">{voiceStack.voice}</code> ·{' '}
           <button
-            onClick={() => {
-              const found = customVoices.find((cv) => cv.voiceId === voiceStack.voice);
-              if (found && confirm(`Remove "${found.name}"?`)) {
-                onRemoveCustomVoice(found.id);
-                onVoiceStack({ ...voiceStack, voice: VOICE_VOICE_OPTIONS[0] });
-              }
-            }}
-            className="text-slate-500 hover:text-danger underline"
+            onClick={onTestVoice}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-botscrew-500 hover:bg-botscrew-600 text-white rounded-md whitespace-nowrap shadow-sm"
+            title="Test using OpenAI Realtime"
           >
-            remove this custom voice
+            <Phone className="h-3.5 w-3.5" strokeWidth={2} />
+            Test Voice AI
           </button>
+        </div>
+      ) : (
+        <div className="space-y-2 pt-2">
+          <div className="grid grid-cols-[1fr_auto_auto] gap-3 items-end">
+            <div>
+              <label className="block text-sm text-slate-600 mb-1.5">Custom voice</label>
+              <select
+                value={voiceStack.voice}
+                onChange={(e) => onVoiceStack({ ...voiceStack, voice: e.target.value })}
+                className="w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+              >
+                {customVoices.length === 0 ? (
+                  <option value="">— no custom voices yet —</option>
+                ) : (
+                  customVoices.map((cv) => (
+                    <option key={cv.id} value={cv.voiceId}>
+                      {cv.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+            <button
+              onClick={() => setAdding(true)}
+              className="px-3 py-2 text-sm font-medium border border-slate-300 rounded-md hover:bg-slate-50 whitespace-nowrap"
+              title="Add a new ElevenLabs custom voice"
+            >
+              + Add custom voice
+            </button>
+            <button
+              onClick={onTestVoice}
+              disabled={customVoices.length === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-botscrew-500 hover:bg-botscrew-600 text-white rounded-md whitespace-nowrap shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Test using ElevenLabs Conversational AI"
+            >
+              <Phone className="h-3.5 w-3.5" strokeWidth={2} />
+              Test Voice AI
+            </button>
+          </div>
+
+          <div className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-md px-3 py-2 flex items-start gap-2">
+            <span>ⓘ</span>
+            <div className="flex-1">
+              <strong className="text-ink-900">LLM is set on the ElevenLabs agent.</strong> Edit
+              the agent in{' '}
+              <a
+                href="https://elevenlabs.io/app/conversational-ai"
+                target="_blank"
+                rel="noreferrer"
+                className="text-botscrew-500 hover:underline"
+              >
+                ElevenLabs → Conversational AI
+              </a>{' '}
+              to change which LLM powers responses. Transcription is handled internally — no
+              separate STT model.
+            </div>
+          </div>
+
+          {customVoices.length > 0 && (
+            <div className="text-[11px] text-slate-400">
+              Active voice_id: <code className="font-mono text-slate-600">{voiceStack.voice}</code>{' '}
+              ·{' '}
+              <button
+                onClick={() => {
+                  const found = customVoices.find((cv) => cv.voiceId === voiceStack.voice);
+                  if (found && confirm(`Remove "${found.name}"?`)) {
+                    onRemoveCustomVoice(found.id);
+                    const remaining = customVoices.filter((cv) => cv.id !== found.id);
+                    if (remaining.length > 0) {
+                      onVoiceStack({ ...voiceStack, voice: remaining[0].voiceId });
+                    } else {
+                      switchToOpenAI();
+                    }
+                  }
+                }}
+                className="text-slate-500 hover:text-danger underline"
+              >
+                remove this custom voice
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -690,6 +739,36 @@ function VoiceModelRow({
         />
       )}
     </div>
+  );
+}
+
+function ProviderTab({
+  active,
+  onClick,
+  label,
+  subLabel,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  subLabel?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-2.5 text-sm font-medium border-b-2 transition flex items-baseline gap-2 ${
+        active
+          ? 'border-botscrew-500 text-botscrew-500'
+          : 'border-transparent text-slate-500 hover:text-ink-900'
+      }`}
+    >
+      <span>{label}</span>
+      {subLabel && (
+        <span className={`text-[11px] ${active ? 'text-botscrew-400' : 'text-slate-400'}`}>
+          {subLabel}
+        </span>
+      )}
+    </button>
   );
 }
 
