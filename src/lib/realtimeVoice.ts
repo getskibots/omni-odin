@@ -130,34 +130,24 @@ export async function startRealtimeSession({
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
 
-  // GA WebRTC endpoint — JSON body with session config + sdp.
+  // GA WebRTC endpoint:
+  //   - Body: raw SDP (Content-Type: application/sdp)
+  //   - URL params: model + session[type]
+  //   - Full session config (instructions, voice, VAD, transcription) is sent
+  //     via the data channel after open.
+  const params = new URLSearchParams({
+    model: REALTIME_MODEL,
+    'session[type]': 'realtime',
+  });
   const sdpResponse = await fetch(
-    `https://api.openai.com/v1/realtime/calls`,
+    `https://api.openai.com/v1/realtime/calls?${params.toString()}`,
     {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/sdp',
       },
-      body: JSON.stringify({
-        session: {
-          type: 'realtime',
-          model: REALTIME_MODEL,
-          voice,
-          instructions: systemPrompt,
-          modalities: ['audio', 'text'],
-          input_audio_format: 'pcm16',
-          output_audio_format: 'pcm16',
-          input_audio_transcription: { model: 'whisper-1' },
-          turn_detection: {
-            type: 'server_vad',
-            threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 500,
-          },
-        },
-        sdp: offer.sdp,
-      }),
+      body: offer.sdp,
     },
   );
 
@@ -178,15 +168,7 @@ export async function startRealtimeSession({
     throw new Error(`Realtime negotiation failed: ${sdpResponse.status} — ${detail}`);
   }
 
-  // Response may be JSON {sdp: ...} or raw SDP — handle both.
-  const rawResponse = await sdpResponse.text();
-  let answerSdp = rawResponse;
-  try {
-    const parsed = JSON.parse(rawResponse);
-    if (typeof parsed?.sdp === 'string') answerSdp = parsed.sdp;
-  } catch {
-    /* not JSON — treat as raw SDP */
-  }
+  const answerSdp = await sdpResponse.text();
   await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
 
   return {
