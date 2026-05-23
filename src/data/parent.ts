@@ -67,6 +67,7 @@ export const PREBAKED_CUSTOM_VOICES: CustomVoice[] = [
   { id: 'pre-sierra', name: 'Sierra', voiceId: '0xibdd3BNglACBXTeQoJ', gender: 'female', prebaked: true },
   { id: 'pre-winter', name: 'Winter', voiceId: 'p1ZXM5QbQ5JtHpWB7n5M', gender: 'female', prebaked: true },
   // Male
+  { id: 'pre-brandon', name: 'Brandon', voiceId: 'LpnwrzbZy984kxCzwufi', gender: 'male', prebaked: true },
   { id: 'pre-forest', name: 'Forest', voiceId: '2u5AAMHdRp6fmmqDm2kq', gender: 'male', prebaked: true },
   { id: 'pre-hawk', name: 'Hawk', voiceId: '2J5a0tOuiJLPoVd4xC8w', gender: 'male', prebaked: true },
   { id: 'pre-river', name: 'River', voiceId: '9tGUFJVKv4fLO52eYj4h', gender: 'male', prebaked: true, accent: 'Kiwi' },
