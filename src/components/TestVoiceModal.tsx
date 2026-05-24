@@ -42,6 +42,7 @@ import {
   clearElevenLabsCreds,
   type ElevenLabsSession,
 } from '../lib/elevenLabsVoice';
+import { USE_PROXY } from '../lib/proxyMode';
 
 interface UiMessage {
   id: string;
@@ -114,8 +115,12 @@ export default function TestVoiceModal({
   const [elAgentIdDraft, setElAgentIdDraft] = useState(getElevenLabsAgentId());
 
   const saveElCreds = () => {
-    if (!elApiKeyDraft.trim() || !elAgentIdDraft.trim()) return;
-    setElevenLabsApiKey(elApiKeyDraft);
+    if (!elAgentIdDraft.trim()) return;
+    // In production the API key lives server-side; only agent_id is needed in the browser.
+    if (!USE_PROXY) {
+      if (!elApiKeyDraft.trim()) return;
+      setElevenLabsApiKey(elApiKeyDraft);
+    }
     setElevenLabsAgentId(elAgentIdDraft);
     setElConfigured(true);
     setShowElKeyInput(false);
@@ -405,9 +410,9 @@ export default function TestVoiceModal({
                   <button
                     onClick={forgetElCreds}
                     className="ml-1 text-[10px] text-slate-400 hover:text-danger underline"
-                    title="Remove voice service key from this browser"
+                    title={USE_PROXY ? 'Clear agent_id from this browser' : 'Remove voice service key from this browser'}
                   >
-                    forget creds
+                    {USE_PROXY ? 'forget agent' : 'forget creds'}
                   </button>
                 </>
               ) : (
@@ -426,13 +431,15 @@ export default function TestVoiceModal({
               <>
                 <CheckCircle2 className="h-3 w-3 text-success" strokeWidth={2} />
                 <span className="text-success font-medium">Live LLM</span>
-                <button
-                  onClick={forgetKey}
-                  className="ml-1 text-[10px] text-slate-400 hover:text-danger underline"
-                  title="Remove the key from this browser"
-                >
-                  forget key
-                </button>
+                {!USE_PROXY && (
+                  <button
+                    onClick={forgetKey}
+                    className="ml-1 text-[10px] text-slate-400 hover:text-danger underline"
+                    title="Remove the key from this browser"
+                  >
+                    forget key
+                  </button>
+                )}
               </>
             ) : (
               <>
@@ -453,7 +460,7 @@ export default function TestVoiceModal({
           <div className="px-5 py-3 bg-amber-50 border-b border-amber-200 space-y-2">
             <div className="flex items-center justify-between">
               <div className="text-xs text-ink-900 font-semibold">
-                Connect voice service
+                {USE_PROXY ? 'Connect voice agent' : 'Connect voice service'}
               </div>
               <button
                 onClick={() => setShowElKeyInput(false)}
@@ -463,28 +470,36 @@ export default function TestVoiceModal({
               </button>
             </div>
             <p className="text-[11px] text-slate-600 leading-relaxed">
-              Both stored in this browser's localStorage only. Find them at{' '}
-              <a
-                href="https://elevenlabs.io/app/conversational-ai"
-                target="_blank"
-                rel="noreferrer"
-                className="text-botscrew-500 hover:underline"
-              >
-                elevenlabs.io → Conversational AI → Agents
-              </a>{' '}
-              and Settings → API Keys.
+              {USE_PROXY
+                ? 'Paste the per-resort agent ID. Voice service key is held server-side.'
+                : "Both stored in this browser's localStorage only. Find them at "}
+              {!USE_PROXY && (
+                <>
+                  <a
+                    href="https://elevenlabs.io/app/conversational-ai"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-botscrew-500 hover:underline"
+                  >
+                    elevenlabs.io → Conversational AI → Agents
+                  </a>{' '}
+                  and Settings → API Keys.
+                </>
+              )}
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-[11px] text-slate-500 mb-1">API Key</label>
-                <input
-                  type="password"
-                  value={elApiKeyDraft}
-                  onChange={(e) => setElApiKeyDraft(e.target.value)}
-                  placeholder="xi-..."
-                  className="w-full text-sm font-mono px-2 py-1.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
-                />
-              </div>
+            <div className={USE_PROXY ? '' : 'grid grid-cols-2 gap-2'}>
+              {!USE_PROXY && (
+                <div>
+                  <label className="block text-[11px] text-slate-500 mb-1">API Key</label>
+                  <input
+                    type="password"
+                    value={elApiKeyDraft}
+                    onChange={(e) => setElApiKeyDraft(e.target.value)}
+                    placeholder="xi-..."
+                    className="w-full text-sm font-mono px-2 py-1.5 border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-[11px] text-slate-500 mb-1">Agent ID</label>
                 <input
@@ -499,7 +514,7 @@ export default function TestVoiceModal({
             <div className="flex items-center justify-end">
               <button
                 onClick={saveElCreds}
-                disabled={!elApiKeyDraft.trim() || !elAgentIdDraft.trim()}
+                disabled={USE_PROXY ? !elAgentIdDraft.trim() : !elApiKeyDraft.trim() || !elAgentIdDraft.trim()}
                 className="px-3 py-1.5 text-xs font-medium bg-botscrew-500 hover:bg-botscrew-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Save & connect

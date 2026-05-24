@@ -1,4 +1,5 @@
 import type { VoiceStack } from '../data/parent';
+import { USE_PROXY } from './proxyMode';
 
 export type TestChannel = 'chat' | 'voice';
 
@@ -35,6 +36,9 @@ export function clearApiKey(): void {
 }
 
 export function isApiKeyConfigured(): boolean {
+  // In production, the proxy supplies the key server-side. UI should treat
+  // "real LLM" as always available — never show the Mock pill or paste prompt.
+  if (USE_PROXY) return true;
   return Boolean(getApiKey());
 }
 
@@ -172,7 +176,10 @@ export async function runChannelTest(
   voiceStack?: VoiceStack,
 ): Promise<string> {
   const apiKey = getApiKey();
-  if (!apiKey) {
+
+  // No proxy AND no localStorage key → fall back to keyword-matched mock.
+  // (In production USE_PROXY=true, so this path only matters for local dev.)
+  if (!USE_PROXY && !apiKey) {
     await new Promise((r) => setTimeout(r, 600 + Math.random() * 400));
     return mockResponse(history, channel);
   }
@@ -180,20 +187,27 @@ export async function runChannelTest(
   // For text-based iteration, both channels use a chat-completions model.
   // Voice's actual realtime model only runs over WebRTC in production.
   const model = 'gpt-4o-mini';
-
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: 'system', content: systemPrompt }, ...history],
-      max_tokens: channel === 'voice' ? 160 : 280,
-      temperature: 0.6,
-    }),
+  const body = JSON.stringify({
+    model,
+    messages: [{ role: 'system', content: systemPrompt }, ...history],
+    max_tokens: channel === 'voice' ? 160 : 280,
+    temperature: 0.6,
   });
+
+  const res = USE_PROXY
+    ? await fetch('/api/openai-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      })
+    : await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body,
+      });
 
   if (!res.ok) {
     const err = await res.text();
@@ -224,22 +238,29 @@ let currentBlobUrl: string | null = null;
 export async function speakText(text: string, voiceName: string): Promise<void> {
   stopSpeaking();
   const apiKey = getApiKey();
+  const canUseRealTts = USE_PROXY || Boolean(apiKey);
 
-  if (apiKey) {
+  if (canUseRealTts) {
     try {
-      const res = await fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini-tts',
-          voice: voiceName,
-          input: text,
-          response_format: 'mp3',
-        }),
-      });
+      const res = USE_PROXY
+        ? await fetch('/api/openai-tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, voice: voiceName }),
+          })
+        : await fetch('https://api.openai.com/v1/audio/speech', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini-tts',
+              voice: voiceName,
+              input: text,
+              response_format: 'mp3',
+            }),
+          });
 
       if (res.ok) {
         const blob = await res.blob();

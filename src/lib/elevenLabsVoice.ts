@@ -1,18 +1,20 @@
 /**
  * ElevenLabs Conversational AI client wrapper.
  *
- * Flow:
- *   1. Use the API key (stored locally) to fetch a signed WebSocket URL for the agent
- *   2. Open a Conversation session with the signed URL + per-call overrides
- *      (system prompt, voice_id)
- *   3. Mic/audio/transcripts handled by the SDK; we surface events via handlers
+ * Auth flow:
+ *   - Production (Vercel) → calls /api/elevenlabs-signed-url. Browser sends
+ *     agent_id only; the proxy holds ELEVENLABS_API_KEY and mints the WS URL.
+ *   - Local dev (vite dev) → calls api.elevenlabs.io directly with a key from
+ *     localStorage (paste flow).
  *
- * Browser limitation: the signed URL fetch uses the API key in an `xi-api-key`
- * header, which is fine for prototype but exposes the key over the network.
- * Production would proxy this server-side.
+ * Then in both modes:
+ *   - Open a Conversation session with the signed URL + per-call overrides
+ *     (system prompt, voice_id, first message).
+ *   - Mic/audio/transcripts handled by the SDK; we surface events via handlers.
  */
 
 import { Conversation } from '@elevenlabs/client';
+import { USE_PROXY } from './proxyMode';
 
 export type ElevenLabsConnectionState = 'idle' | 'connecting' | 'connected' | 'error';
 
@@ -53,6 +55,9 @@ export function setElevenLabsAgentId(id: string): void {
 }
 
 export function isElevenLabsConfigured(): boolean {
+  // In production, the API key lives server-side on Vercel — browser only needs agent_id.
+  // In local dev, both must be in localStorage.
+  if (USE_PROXY) return Boolean(getElevenLabsAgentId());
   return Boolean(getElevenLabsApiKey() && getElevenLabsAgentId());
 }
 
@@ -63,15 +68,17 @@ export function clearElevenLabsCreds(): void {
 }
 
 async function fetchSignedUrl(apiKey: string, agentId: string): Promise<string> {
-  const res = await fetch(
-    `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${encodeURIComponent(
-      agentId,
-    )}`,
-    {
-      method: 'GET',
-      headers: { 'xi-api-key': apiKey },
-    },
-  );
+  // Production: proxy keeps the API key server-side. Browser sends agent_id only.
+  const url = USE_PROXY
+    ? `/api/elevenlabs-signed-url?agent_id=${encodeURIComponent(agentId)}`
+    : `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${encodeURIComponent(
+        agentId,
+      )}`;
+
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: USE_PROXY ? {} : { 'xi-api-key': apiKey },
+  });
 
   if (!res.ok) {
     const errText = await res.text();
@@ -104,8 +111,11 @@ export async function startElevenLabsSession({
 }): Promise<ElevenLabsSession> {
   const apiKey = getElevenLabsApiKey();
   const agentId = getElevenLabsAgentId();
-  if (!apiKey || !agentId) {
-    throw new Error('ElevenLabs API key and agent ID required');
+  if (!agentId) {
+    throw new Error('ElevenLabs agent ID required');
+  }
+  if (!USE_PROXY && !apiKey) {
+    throw new Error('ElevenLabs API key required in dev mode (proxy supplies it in production).');
   }
 
   handlers.onState('connecting');

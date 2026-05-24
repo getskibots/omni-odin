@@ -4,8 +4,16 @@
  * - Data channel: control events (session config, transcripts, errors)
  * - Server-side VAD handles turn-taking
  *
+ * Auth flow:
+ *   - Production (Vercel) → POSTs the SDP offer to /api/openai-realtime-sdp.
+ *     The proxy adds the server-side OPENAI_API_KEY. Browser never sees the key.
+ *   - Local dev (vite dev) → POSTs directly to api.openai.com with a key from
+ *     localStorage (paste flow). Same behavior as before.
+ *
  * https://platform.openai.com/docs/guides/realtime-webrtc
  */
+
+import { USE_PROXY } from './proxyMode';
 
 const REALTIME_MODEL = 'gpt-realtime';
 
@@ -29,11 +37,15 @@ export async function startRealtimeSession({
   voice,
   handlers,
 }: {
-  apiKey: string;
+  /** Required only in local dev. Ignored in production (proxy supplies the key). */
+  apiKey?: string;
   systemPrompt: string;
   voice: string;
   handlers: RealtimeHandlers;
 }): Promise<RealtimeSession> {
+  if (!USE_PROXY && !apiKey) {
+    throw new Error('OpenAI API key required in dev mode (paste it in the modal).');
+  }
   handlers.onState('connecting');
 
   // GA Realtime API: direct SDP exchange with the project key.
@@ -130,25 +142,33 @@ export async function startRealtimeSession({
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
 
-  // GA WebRTC endpoint:
+  // GA WebRTC endpoint (direct path):
   //   - Body: raw SDP (Content-Type: application/sdp)
-  //   - URL params: model + session[type]
+  //   - URL params: model + session.type=realtime  (literal dots; brackets get
+  //     URL-encoded to %5B/%5D which OpenAI ignores)
   //   - Full session config (instructions, voice, VAD, transcription) is sent
   //     via the data channel after open.
-  // Use literal "session.type" (dots are valid in query keys, no encoding).
-  // Bracket notation (session[type]) gets URL-encoded to %5B/%5D which OpenAI
-  // doesn't parse.
-  const sdpResponse = await fetch(
-    `https://api.openai.com/v1/realtime/calls?model=${encodeURIComponent(REALTIME_MODEL)}&session.type=realtime`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/sdp',
-      },
-      body: offer.sdp,
-    },
-  );
+  //
+  // In production we route through /api/openai-realtime-sdp so the API key
+  // stays server-side. The proxy hardcodes the same model + session.type
+  // params and forwards Content-Type: application/sdp.
+  const sdpResponse = USE_PROXY
+    ? await fetch('/api/openai-realtime-sdp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/sdp' },
+        body: offer.sdp,
+      })
+    : await fetch(
+        `https://api.openai.com/v1/realtime/calls?model=${encodeURIComponent(REALTIME_MODEL)}&session.type=realtime`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/sdp',
+          },
+          body: offer.sdp,
+        },
+      );
 
   if (!sdpResponse.ok) {
     const err = await sdpResponse.text();
