@@ -7,6 +7,42 @@ Each entry includes context, the decision made (if any), and the follow-up neede
 
 ---
 
+## 🔗 How to identify + connect a specific bot (bot_id → Odin projectId)
+
+A bot's identifier "lifts" from the Botscrew admin URL:
+```
+https://bots.getskitickets.com/admin/bot/2/knowledge/instructions
+                                        └──┘
+                              bot_id = 2  (integer, sequential:
+                              also seen 101 = Cranmore chat, 248 = Mtn Collective voice)
+```
+
+**Two different identifiers — don't conflate them:**
+
+| ID | What it is | Who uses it | Where to get it |
+|---|---|---|---|
+| **Botscrew bot_id** (`2`) | Botscrew's wrapper identifier | Botscrew admin URL + their private `/api/private/...` | Visible in the admin URL |
+| **Odin `projectId`** | The Odin project the bot maps to | **Odin's API** (the one omni-odin would call) | Inside Botscrew's `odinConfigs` for that bot — **Botscrew holds it** |
+
+**The mapping chain:**
+```
+URL /bot/2/  →  Botscrew bot_id = 2  →  (Botscrew odinConfigs)  →  Odin projectId + agentId  →  Odin API
+                └─ you can see this ─┘   └── Botscrew holds the mapping + the credentials ──┘
+```
+(Per `../reference/ODIN_SUBSTRATE.md` §3: a live bot's `odinConfigs` exposed
+`projectId` + `recognitionProvider: OPEN_AI` + an `<odinId>` = the Odin agent id.)
+
+**Consequence:** the bot_id tells you *which* bot (omni-odin's
+`model.ts::Channel.botscrewBotId` already holds it). But connecting omni-odin to
+live data/config requires that bot's **Odin projectId + scoped apiKey/apiSecret** —
+which Botscrew holds. Concrete Tuesday ask:
+
+> "Each bot has a bot_id in your admin URL (bot 2, 101, 248…), and each maps to an
+> Odin projectId in its config. For our bots, can you provision the Odin projectId
+> + scoped API credentials so omni reads/writes those projects directly?"
+
+---
+
 ## ✅ Resolved by the Botscrew product documentation (May 2026)
 
 We obtained Botscrew's official product help docs (66 pages, now in
