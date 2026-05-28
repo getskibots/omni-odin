@@ -1,0 +1,42 @@
+ AI Knowledge AI Knowledge 
+ Bot instance can be trained to to give answers to user’s questions based on the website, file or text sample content. AI training is supported by ODIN and is based on the GPT-4 or GPT-3.5-turbo model. Note, that user’s NLP requests are first sent for Intent recognition and if no matching intent was found, they are sent to AI knowledge. In the widget AI response is sent via ChatGPT-like streaming 
+
+ How to train chatbot on website knowledge? 
+ Go to the NLP tab Go to the AI knowledge sub-tab 
+
+ Enter valid website URL and hit “Enter” key Press “Start training” The training may take up to 30 minutes, usually 2-5 minutes. During this status “Bot is training” is displayed. 
+ When the number of trained sub-pages is displayed in the sub-tab (currently up to 250 pages), feel free to send your questions to chatbot. You can click on the number and see list of trained sub-pages 
+ If you want to remove some info from the knowledge in order to restrict chatbot responses on specific topics, you can delete specific subpages from the website source after training: 
+ Expand the list of trained subpages Press the bin icon in front of the subpage Confirm the deletion in pop-up 
+
+ After the subpage was deleted, the bot will stop giving replies based on the subpage content. 
+
+ How to train chatbot on file knowledge? 
+ Go to “File” section Click “Upload files” and select .pdf, .doc or .txt file from your device 
+ Wait until file uploaded (currently max size of the file is limited to 100 MB). Press “Start training” and wait while bot is training After file was transferred to the “Trained” section, feel free to send your questions to chatbot. 
+ How to train chatbot on text samples? 
+ Go to “Text” section Enter Title in the “Enter title field”. Title is optional, but should be unique. If skipped, the text sample would be “Untitled”. Enter text sample into text field and press “Add text” Press “Start training” and wait until training finished. After text sample was transferred to the “Trained” section, feel free to send your questions to chatbot. Trained text sample can be edited after click on “pencil” icon. 
+ How to customise prompt? 
+ Prompt is a description of the task that the AI is supposed to accomplish. Think of it as a set of instructions to generate answers. 
+ Completion is the output that language model generates based on the provided prompt (input). Completion is used to generate answers. 
+
+ By customising prompt you can configure chatbot features like personality, size of response, etc. 
+ Go to NLP tab Go to AI Knowledge sub-tab Click on the “gear” icon Here you can edit default prompt or reset your prompt to default value. Platform user can edit only optional and recommended parts. 
+ Prompt structure 
+ 🟢 - optional part 🟡  - recommended part (it should be skipped when you want to use only prompt and general knowledge) 🔴  - mandatory part (not customisable) 
+ "You are an online assistant that gives short answers that are no longer than 100 words. " \
+ "If the answer is not in the article, say that you don't know the answer, and don't explain why. " \
+ "You reply only based on the text knowledge below. Generate a message in JSON format." \
+ "After the generated chat message, provide a percentage of how much information " \
+ "from the generated message is included in the knowledge. Do not use '%' sign in \"percentage\" field." \
+ "Each text knowledge contains source field, and you have to output the most relevant source." \
+ "Use the following JSON output format." \
+ "Output format: { " \
+ "\"message\": <generated message>, " \
+ "\"top_source\": <source>, " \
+ "\"percentage\":<percentage number of information in the generated message from the knowledge> " 
+
+ How to switch between GPT models? 
+ You can switch between available GPT models in the Settings section of the AI Knowledge sub tab via Model dropdown. GPT-4 model is selected by default. 
+
+ Related articles: 

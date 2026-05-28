@@ -1,0 +1,10 @@
+ Buttons Buttons Overview 
+ The button is an atom builder element that provides the ability to connect atoms in the atom builder. The button can be added to the Text element and Gallery element of atom builder. The button is a static element, it does not disappear after the chatbot user has clicked it. Each text element and gallery element can contain up to 3 buttons. There are 2 types of buttons: postback and URL buttons. When a user clicks on the postback button he receives the next tom in the chatbot. When a user clicks on the URL button, the web link is opened inside the webview or in the new browser tab or in case the link contains the ‘?openInWidgetPage=true’ parameter in the same tab as the widget. 
+ Add postback button 
+ Open atom. Click ‘Text’ at the bottom of the atom builder. Click the ‘Add button’. Enter the button title in the ‘Button title’ field. The title is limited to 40 symbols. Select the postback atom from the dropdown. Save atom. 
+
+ Add URL button 
+ Click the ‘Add button’. Enter the button title in the ‘Button title’ field. Select ‘URL’. Enter the link in the URL field. Save atom. 
+ If option ‘Open in messenger’ is enabled, the webpage will be opened inside the webview, if not - in the new browser tab. In case link contains ‘?openInWidgetPage=true’ parameter option ‘Open in messenger’ should be disabled. The link will be opened in the same tab as the widget. 
+ Admin can add attributes to postback and URL buttons via ‘Set attribute’ popup. 
+ ← Previous topic Next topic → Related articles: How to add attributes to the chatbot flow? 

@@ -1,0 +1,6 @@
+ How to clear chat history in widget bot? How to clear chat history in widget bot? On the "Test widget" page 
+ Click the button "Reset chat" in the top right corner of the page Click on widget logo Widget welcome screen is displayed - you are ready to start a new conversation 
+ On the website (Google Chrome) 
+ Right-click on the webpage > Select "Inspect" from context menu Click on the "Console" tab Click on the lock icon in the command line Select "Cookies" from the dropdown Expand your website cookies in the list Expand Local storage Click on storage Click button "Remove" Click button "Done" Refresh webpage Close browser console Click on widget logo Widget welcome screen is displayed - you are ready to start a new conversation 
+ On the website (Safari) 
+ Go to Safari Select "Clear history" from the dropdown Click "Clear history" on the browser popup Refresh webpage Click on widget logo Widget welcome screen is displayed - you are ready to start a new conversation 

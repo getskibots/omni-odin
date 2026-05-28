@@ -1,0 +1,96 @@
+ API call API call Overview 
+ API call element in the atom builder provides an ability to define an HTTP request to some external API and build more sophisticated chatbots using atom builder capabilities. The defined request is being performed when the corresponding atom is being triggered in the chatbot flow. Supported methods are POST, PUT, GET, DELETE. Types of request 
+ GET, DELETE method without body POST, PUT method without body with a body (in case body contains attributes they will be replaced by values of the specific user) with full user data (attributes included: default, system, custom) "user": {
+ "id": ,
+ "registeredAt": "",
+ "botId": ,
+ "timezone": ,
+ "tags": [],
+ "firstName": "",
+ "lastName": "",
+ "chatId": ,
+ "languageShortName": "",
+ "state": "",
+ "email": "",
+ "chatStatus": "",
+ "platform": "",
+ "currentAtomName": "",
+ "updatedAt": "",
+ "contactId": ,
+ "profilePic": ""
+ } with body and full user data (attributes included: default, system, custom) Types of response 
+ No response - request is being performed and nothing is being returned as a response; additional content in the atom with API call is required in order to send to chatbot user. 
+ Attributes in response - response contains field “attributes”. Attributes will be set to chatbot user, additional content in the atom with API call is required in order to send to chatbot user. Example: {
+ "attributes": {
+ "attribute1": "value1", 
+ "attribute2": "value2"
+ }
+} 
+ Messages in response - response contains field “messages” with message model. The message will be sent to the chatbot user. Supported types: text message, generic template, list template, attachment. Example: {
+ "messages": [
+ {
+ "text": "Hi!",
+ "type": "DEFAULT",
+ "messageNumber": 1,
+ "quickReplies": [
+ {
+ "contentType": "text",
+ "title": "Test QR",
+ "payloadAtomId": 23,
+ "attributes": [
+ {
+ "name": "language",
+ "value": "en"
+ }
+ ],
+ "quickReplyNumber": 1
+ }
+ ],
+ "buttons": [
+ {
+ "type": "postback",
+ "attributes": [
+ {
+ "name": "language",
+ "value": "en"
+ }
+ ],
+ "title": "Test Button",
+ "payloadAtomId": 23,
+ "buttonNumber": 1
+ }
+ ]
+ }
+ ]
+} 
+ 4. Attributes and messages in response - response contains fields “attributes” and “messages”. Attributes will be set to the user, then messages will be sent to the user. 
+ 5. Custom response - in this case, the options above don’t work. Additional content in the atom with API call is required in order to send to chatbot user. Chatbot attributes may be assigned with values of properties from a custom response via JSON path (Response mapping option- see below). Example: {
+ "address": {
+ "city": "London",
+ "street": "Baker Street"
+ }
+} 
+ Request URL 
+ Request URL may contain path variables and query parameters. They can be created as attributes and inserted via attribute popup. 
+
+ Headers 
+ Request headers can be provided, edited, and deleted in the Headers tab. The number of headers is unlimited. Headers are not required for request. Body 
+ The request body is applicable only for POST and PUT methods. It can be provided in the Body tab in JSON format. The request body is not required for the request. Admin is able to insert attributes into the body by typing "{{" and selecting an attribute from the list. Admin is also able to mark "Add full user data" at the right bottom of the body container and full chatbot's user data with attributes will be sent along with the body in the request. The body is not required for the request. 
+
+ Response 
+ Admin is able to test the request for a specific user by selecting user_id in the Response tab. user_id can be found at the end of the link to the conversation in the Support tab (i.e. /support/1997). 
+
+ After pressing "Test the request" the status code of the request, Response headers, Response body, Request headers, and Request body are displayed in the corresponding sub-tabs of the Response tab. Status codes: 1xx Informational 2xx Success 3xx Redirectional 4xx Client error 5xx Server error 
+
+ Response mapping 
+ In case the request has a custom response only (not messages or attributes) JSON path for attributes can be set and edited in the Response mapping tab. Response mapping is optional. Example of the custom response {
+ "address": {
+ "city": "London",
+ "street": "Baker Street"
+ }
+} 
+
+ This way chatbot attributes "city" and "street" will be assigned with values of "city" and "street" properties from a custom response. 
+ Note! Don't forget to add additional content in atom builder to API call element in case of: no response attributes only in response custom response 
+ ← Previous topic Related articles: Api Calls Messages Response 
+ 

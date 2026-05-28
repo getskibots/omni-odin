@@ -1,0 +1,5 @@
+ Atom Atom Atom is the structural unit of the bot. Atom can contain different elements: typing, text, gallery, attachment, redirects, etc. Atom is being created in the Atom builder part of the ‘Flows’ tab. Admin can create connections between atoms due to the conversational design. Atoms from ‘Human handover, ‘Basic chatbot configurations’ and ‘Feedback’ flow are present by default in the newly created bot instance. Their content is default but can be updated in the atom builder. 
+ Let’s take a look at the default ‘Online support(open request)’ atom. Chatbot user that receives this atom is being transferred to the Support mode automatically and receives text message ‘I've transferred your request to our team. One of our agents will contact you as soon as possible either here or via email to {{user_email}}.’ Attributes from the ‘Set attribute’ element are not displayed to the chatbot user but are saved in the database, so new support request is being opened for the chatbot user. 
+ ← Previous topic Next topic → 
+
+ 

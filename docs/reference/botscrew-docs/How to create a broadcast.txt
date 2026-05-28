@@ -1,0 +1,10 @@
+ How to create a broadcast? How to create a broadcast? Creating a broadcast Congratulations! Related articles Creating a broadcast 
+ Open the 'Broadcast' tab Click on '+Add Broadcast' button 
+ In the pop-up menu, enter the Broadcast name Select an atom, that you want to broadcast to users Select tags, that should receive this broadcast (users with selected tags will receive) Select time, where users should receive this broadcast Tap on 'Confirm Broadcast' to send out. 
+ When to send broadcast 
+ Send now - broadcast will be sent immediately in the Bot’s timezone. Bot’s timezone is UTC by default. It can be changed in the ‘Bot Settings’ → ‘Team hours’. Schedule date & time - broadcast will be sent at the date and time selected on the date picker. In case ‘Use user timezone’ is selected, the broadcast will be sent in the chatbot user’s timezone, if not - in the bot’s timezone. 
+
+ Broadcast statuses 
+ Scheduled - the broadcast is not sent yet, will be sent at the selected date and time. In progress - the broadcast is being sent to chatbot users’ according to the users’ timezones Done - the broadcast has been sent. Canceled - the broadcast has been canceled. Broadcasts with statuses ‘Scheduled’ and ‘In progress’ can be canceled when the admin user clicks on the cross icon in front of the broadcast. Congratulations! 
+ You have created your first broadcast 
+ Related articles How to add a tag to an atom 

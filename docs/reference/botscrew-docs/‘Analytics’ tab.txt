@@ -1,0 +1,10 @@
+ ‘Analytics’ tab ‘Analytics’ tab Introduction 
+ On the Analytics tab, you can monitor and analyze the success of your chatbot: feedback rate, completion rate, and drop-off rate. You also have the ability to review transcripts of the conversations in order to analyze the reasons for drop-offs. Ratings and Reviews 
+ ‘Feedback flow’ is provided by default in each chatbot. You can place atom ‘Feedback score (Start)’ in any place of the flow due to conversational design as well as in the persistent menu. Chatbot users will be asked to rate the chatbot 1 to 5 stars and provide feedback comments. Chatbot users can also provide feedback in the Feedback popup in the widget. A feedback popup is displayed at the end of the conversation in a widget in case the toggle ‘Ask for rating after the conversation ends’ is switched on in a Widget tab. 
+
+ You can update the content of the Feedback flow in the ‘Flows’ tab. 
+
+ The number of chatbot users who provided each rating is displayed on the chart. Feedback comments are displayed on the right side of the section. Ratings and reviews can be sorted by date/rate in ascending or descending order. Ratings and reviews can be filtered by time range using a date picker at the top right corner of the page. You can go to the chatbot user’s conversation in the Support tab to review the reason for the feedback comment. 
+ Funnels Funnels 
+
+ 

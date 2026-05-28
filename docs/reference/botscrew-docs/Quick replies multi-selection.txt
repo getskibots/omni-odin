@@ -1,0 +1,18 @@
+ Quick replies multi-selection Quick replies multi-selection 
+ In some cases, there’s a need to select more than one option when answering some questions. E.g., select ingredients for the pizza, choose subjects for the course, or a playlist of songs for a party… Multi-Select should help simplify setting up these flows. It allows the end user to select multiple quick replies in the widget bot. 
+ How to configure multi-selection in the flow? 
+ Open atom with quick replies in atom builder Add the last quick reply to the carousel of quick replies. It will serve as submit button. Provide the preferred title (i.e., “Submit,” “Select,” “Done,” etc.) Select postback atom for the last quick reply. This atom will be received by the end user after his answers submitted Add attributes to the last quick reply is_multi_select=true (required) is_submit_button=true (required) max_multi_select = integer — max number of selections (optional) is_button_large=true (optional) 
+ ☝🏽 Note: ❗  max_multi_select should always be less than the total number of quick replies in the atom ❗  max_multi_select is not a required attribute; the end user can submit at least one option ❗ The “submit” button should always be the last in the list of quick replies 
+
+ Add separate attribute to each quick reply to store the selection. I.e. citrus=true, flower=true, etc. 
+
+ You can use attribute values in the Smart redirect element further in the flow to direct users to different parts of the flow based on the value combinations 
+ You can also add attribute is_button_large=true to “submit” button to change appearance of the quick replies in the widget if you wish 
+ End-user experience 
+ The end-user has received message with options 
+
+ The end user should select at least one option for Submit button to appear. The end user can select max number of options as set in max_multi_select attribute, more options are not clickable. User can deselect any option. 
+
+ When end-user clicks “Submit” button, he receives atom set as postback. Selected options are being sent comma-separated 
+
+ ← Previous topic Next topic → 

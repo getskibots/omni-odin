@@ -1,0 +1,6 @@
+ Quick Replies Quick Replies Overview 
+ The quick reply is an atom builder element that provides the ability to connect atoms in the atom builder. The quick reply can be added to the Text, Gallery, and Attachment element of atom builder. Each element can contain up to 11 quick replies. The quick reply is not a static element, it disappears after the chatbot user has clicked it. Add quick reply 
+ Open atom. Click ‘Text’ at the bottom of the atom builder. Click the ‘+Add quick reply’. Enter the button title in the ‘Reply title’ field. The title is limited to 100 symbols. Select the postback atom from the dropdown. Save atom. 
+
+ Admin can add attributes to postback and URL buttons via ‘Set attribute’ popup. 
+ ← Previous topic Next topic → Related articles: How to add attributes to the chatbot flow? 

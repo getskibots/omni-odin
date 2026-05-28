@@ -1,0 +1,2 @@
+ How to change the chatbot's name? How to change the chatbot's name? Introduction Changing the chatbot's name Related articles Introduction It's a piece of pie! Changing the chatbot's name Follow these steps: Navigate to the Settings page → General; Tap on the "New chatbot's name" field; Enter the name of your chatbot (make sure it's unique); Click on 'Update' to finish. Related articles Home page How to clone a chatbot? How to delete a chatbot? How to transfer chatbot’s content between bots? 
+ 

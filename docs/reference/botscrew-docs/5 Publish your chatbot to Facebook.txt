@@ -1,0 +1,5 @@
+ 5. Publish your chatbot to Facebook 5. Publish your chatbot to Facebook Introduction Step 1: Create necessary pages on Facebook Step 2: Integrate your chatbot with your Facebook page Congratulations! Introduction Learn how to publish your chatbot on your FaceBook page, following these simple steps. If you don’t want to use bot in Messenger, skip this step. Step 1: Create necessary pages on Facebook Make sure you have an active Facebook account. You can create one following this guideline . Once you have a Facebook account in place, create a Facebook page by following this guideline. Step 2: Integrate your chatbot with your Facebook page 
+ Follow this guide . 
+ Congratulations! Boom 🔥 You have successfully connected your chatbot with your Facebook page. Jump into the next article to learn how to test it now. 
+ ← Previous topic Next topic → 
+ 

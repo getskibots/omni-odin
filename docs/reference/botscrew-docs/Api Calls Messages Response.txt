@@ -1,0 +1,219 @@
+ Api Calls Messages Response Api Calls Messages Response 
+ Message Object Structure: {
+ "messageNumber": 1, //ordinal number of the message
+ "text": "String", // text is first-priority field — if exists,
+ // this text will be sent ot the user despite user language
+ "texts": [{ // using this field, you can send text based on user language
+ "language": "en", // short name for the language
+ "value": "Text in English" // text to be sent if user has a language above
+ },{ 
+ "language": "fr",
+ "value": "Text in French"
+ }],
+ "quickReplies": [
+ {
+ "contentType": "text", // it"s a constant for QR and should be present
+ "title": "Title for the QR",
+ "titles": [{ // the same rule 
+ "language": "en",
+ "value": "Title in English"
+ },{ 
+ "language": "fr",
+ "value": "Title in Franch"
+ }],
+ "payloadAtomName": "AtomName", // atom with this id will be sent when user clicks on QR
+ "attributes": [ // when user clicks on QR, this attributes will be assigned to the user
+ {
+ "name": "attribute name",
+ "value": "new attribute value"
+ }
+ ],
+ "quickReplyNumber": 1 // ordinal number of the quick reply
+ }
+ ],
+ "buttons": [
+ {
+ "contentType": "postback", // it could be "postback" or "web_url" for buttons
+ "title": "Title for the button",
+ "titles": [ // the same rule as for text and texts apply
+ { 
+ "language": "en",
+ "value": "Title in English"
+ },{ 
+ "language": "fr",
+ "value": "Title in Franch"
+ }
+ ],
+ "url": "https://acme.com", // if type is web_url, it"s the url opening on button click
+ "payloadAtomName": "AtomName", // atom with this id will be sent when user clicks on the button (if type is postback)
+ "attributes": [ // when user clicks on the bttn, this attributes will be assigned to the user
+ {
+ "name": "attribute name",
+ "value": "new attribute value"
+ }
+ ],
+ "buttonNumber": 1 // ordinal number of the button
+ }
+ ],
+ "attachment": {
+ "type": "image" // could be "image" or "template" for generic message
+ "payload": {
+ "url": "link for the image if attachment type is 'image',
+ "templateType": "generic", // should be present for generic template messages
+ "elements": [
+ {
+ "title": "Generic Element Title",
+ "titles": [...], // the same as for text and texts,
+ "subtitle": "Generic Element Subtitle", // Optional
+ "subtitles": [...], // the same as for text and texts
+ "elementNumber": Integer, // ordinal number of the element,
+ "imageUrl": "Image for generic"
+ }
+ ]
+ } 
+ }
+} 
+ Examples Attribute {
+ "attributes": {
+ "attribute_1": "value_1",
+ "attribute_2": "value_2"
+ }
+} Attribute with text {
+ "attributes": {
+ "attribute_1": "value_1",
+ "attribute_2": "value_2"
+ },
+ "messages": [
+ {
+ "type": "DEFAULT",
+ "text": "Hello there!",
+ "messageNumber": 1
+ }
+ ]
+} Text message {
+ "messages": [
+ {
+ "type": "DEFAULT",
+ "text": "Hello there!",
+ "messageNumber": 1
+ }
+ ]
+} Multi-language text {
+ "messages": [
+ {
+ "type": "DEFAULT",
+ "texts": [
+ {
+ "language": "uk",
+ "values": [
+ "Привіт!"
+ ]
+ },
+ {
+ "language": "en",
+ "values": [
+ "Hello there!"
+ ]
+ }
+ ],
+ "messageNumber": 1,
+ "buttons": [
+ {
+ "type": "postback",
+ "titles": [
+ {
+ "language": "uk",
+ "value": "Це просто кнопка"
+ },
+ {
+ "language": "en",
+ "value": "Postback Button"
+ }
+ ],
+ "buttonNumber": 1,
+ "payloadAtomName": "Welcome message"
+ }
+ ]
+ }
+ ]
+} Text with buttons {
+ "messages": [
+ {
+ "type": "DEFAULT",
+ "text": "Hello there!",
+ "messageNumber": 1,
+ "buttons": [
+ {
+ "type": "postback",
+ "title": "Postback Button",
+ "buttonNumber": 1,
+ "payloadAtomName": "Welcome message"
+ },
+ {
+ "type": "web_url",
+ "url": "https://www.google.com/maps",
+ "title": "Google Maps Button",
+ "buttonNumber": 2,
+ "messengerExtensions": false
+ }
+ ]
+ }
+ ]
+} Carousel {
+ "messages": [
+ {
+ "type": "DEFAULT",
+ "messageNumber": 1,
+ "attachment": {
+ "type": "template",
+ "payload": {
+ "templateType": "generic",
+ "elements": [
+ {
+ "title": "Title 2",
+ "imageUrl": "https://via.placeholder.com/400x400/FFFF00/000000",
+ "subtitle": "Subtitle 2",
+ "buttons": [
+ {
+ "type": "postback",
+ "title": "Postback Button 2",
+ "buttonNumber": 1,
+ "payloadAtomName": "Welcome message"
+ },
+ {
+ "type": "web_url",
+ "url": "https://www.google.com/maps",
+ "title": "Google Maps 2",
+ "buttonNumber": 2,
+ "messengerExtensions": false
+ }
+ ],
+ "elementNumber": 2
+ },
+ {
+ "title": "Title 1",
+ "imageUrl": "https://via.placeholder.com/400x400",
+ "subtitle": "Subtitle 1",
+ "buttons": [
+ {
+ "type": "web_url",
+ "url": "https://www.google.com/maps",
+ "title": "Google Maps 1",
+ "buttonNumber": 2,
+ "messengerExtensions": false
+ },
+ {
+ "type": "postback",
+ "title": "Postback Button 1",
+ "buttonNumber": 1,
+ "payloadAtomName": "Welcome message"
+ }
+ ],
+ "elementNumber": 1
+ }
+ ]
+ }
+ }
+ }
+ ]
+} Related articles: API call 

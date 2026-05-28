@@ -1,0 +1,17 @@
+ FaceBook integration FaceBook integration 
+ Bot instance can be connected to the Facebook Messenger via the Integrations sub-tab of the Bot Settings tab of Enterprise Platform. 
+ Create a new page on Facebook. Go to business integrations . 
+
+ Press ‘View and edit’ in front of the Botty app. 
+
+ Leave a checkmark in front of your page in each enabled section in the business integration. Press ‘Save’. Return to Enterprise Platform. Expand the ‘Facebook’ section in the Integrations sub-tab of the Bot Settings tab. Press ‘Connect to Facebook page’ button. 
+
+ If it’s your first login to Enterprise Platform you will be redirected to Facebook login page or asked to Grant access to your Facebook profile (press ‘Continue as...’). 
+ Press ‘Connect to Facebook page’ button again Select facebook page from the ‘Facebook page’ dropdown 
+ Select default language for the page from the Default language dropdown. Language can be added in the Languages sub-tab of the Bot Settings tab. Default language will be used by bot in case end user’s profile language is not supported by bot. 
+
+ Add greeting text (optional). Text will be displayed in the Messenger before user clicks “Get started” button. It can contain attributes such as {{user_first_name}}, {{user_last_name}}, and {{user_full_name}}. Press “Save” and wait until page connected. You can connect multiple pages to single bot instance. Default language and greeting text can be edited after connection. Page can be disconnected from the bot. 
+ Press the button ‘Test in Messenger’ in the header of the platform and select page from the list. Press ‘Get started’ in the Messenger. 
+ Congratulations! The bot replies with a Welcome message 🤘 
+
+ 

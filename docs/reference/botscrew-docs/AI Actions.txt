@@ -1,0 +1,28 @@
+ AI Actions AI Actions 
+ An AI Action is a specific function that can be triggered by ODIN based on user input. It represents predefined operations (like placing an order, generating a report) that are executed when the ODIN recognises corresponding user request. In other words, when a user interacts with an assistant via text messages, ODIN interprets the user’s intent and triggers the appropriate AI Action to complete the task, by passing user’s parameters. How this works? Firstly, to ensure the AI action will be triggered correctly, you need to clearly describe the goals and tasks to assistant via custom prompt (AI knowledge subtab). By focusing on prompt, you ensure that your assistant can handle more natural, varied conversations, providing a smoother user experience. 
+ General Section 
+ Go to the NLP tab. Open subtab “AI Action”. Click on the button “Add new action”. 
+ Give the name in the “AI action name” field. The name should be clear and unique name for the action, which will be used to identify that action. Example: “ Give cake receipt ” OR “ Get order status ”. 
+ Add the description in the “Description for AI” field. Here should be detailed description that tells what the action does and when it should be triggered. Include a detailed explanation of when this action should be triggered based on user input. Mention the critical parameters that need to be passed for the action to be executed. Example: “W hen user asks a receipt or help with cooking cake, collect parameters - type of cake, size and frosting, and show a complete chocolate cake recipe. ” OR “ Return order status to customer after they provided order id .” 
+ Select the specific atom that will be triggered by AI action. Atom should contain a specific action that will be executed when the AI action is called (i.e. API call). 
+
+ When all fields are filled, click “Next” button. 
+ Parameters Section 
+ AI Actions often require input parameters to execute. For example, when asking about order status, parameters like order id are necessary. You can specify multiple parameters if needed. 
+ Open the drop-down and create new or select existing attribute. Select the the type (string, number, boolean, string_array, etc.). Enable “Required” in case parameter is mandatory. AI action will not be executed until parameter value is provided by user. Add a short description for parameter to “Add description for AI” field. 
+
+ Add expected parameter values if needed (optional). “Values” is a specific set of options that are fixed for a particular parameter. Predefined values limit the possible user inputs to a specific list. This helps ensure consistency, reduces errors, and makes it easier for the AI to process. Example: your assistant helps users order T-shirts online. T-shirts have predefined list of sizes, so only next values will be considered as valid by an assistant: xl, s, etc. 
+
+ After after you filled Parameters section with data, click “Save” button. 
+ Enable AI action and then check if your action works as expected. 
+
+ Atom to Trigger 
+ This is an atom in your system that is responsible for the action, like generating a receipt, give a result of the user’s test, or order status. 
+ The atom to trigger is a good place for your API calls. 
+ The attribute last_ai_action_result holds the output or outcome of the most recent AI action that was triggered. After an AI action is executed, the result (e.g., confirmation, failure message, or processed data) is stored in last_ai_action_result . 
+ This attribute is essential in multi-step processes, allowing the system to make informed decisions based on past actions. 
+ Example: Assistant was asked about order status by user. ODIN decided to trigger “Order status” AI action. User was asked to provide order id (required parameter for AI action). “Order status” atom was triggered. API call to external service was performed with user’s order id as query parameter. Order status value from response was saved to last_ai_action_result attribute. Value of the attribute is used by ODIN to generate reply for user. 
+ How it looks for user? 
+ User asked about order status. Assistant asked about order id because it’s a required attribute for “Order status” action. User provided order id. AI action was performed and API request in “Order status” atom was triggered Order status value from the response was saved to ‘last_ai_action_result’ attribute and used by assistant to generate text response for user. 
+
+ 

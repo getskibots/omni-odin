@@ -1,0 +1,16 @@
+ How to build bot flow using AI Knowledge? How to build bot flow using AI Knowledge? An atom “Knowledge reply” which is automatically generated after successful AI knowledge training can be edited like any other atom in Flows tab! Just keep in mind that all atom content will be sent to the user after AI knowledge response. Some useful attributes that can be included in the flow are {{knowledge_top_source}} and {{knowledge_sources_used}}. {{knowledge_top_source}} displays the link to the most relevant website page or link to the file that were used as the knowledge source. {{knowledge_sources_used}} displays 3 top sources used in the reply generation separated by | delimiter. On click, the links and .pdf files will be opened in the new browser tab; .doc and .txt files will be downloaded. 
+
+ Provide link to sources 
+ You can insert {{knowledge_top_source}} directly into the text message in the Knowledge reply atom 
+
+ Or you can add attribute as value into URL button. Uncheck “Open in Messenger” and link will be opened in new browser tab on click as some webpages may refuse to be opened inside iFrame. 
+
+ You can also insert attribute as button title + insert the same attribute as value for URL button as described above, but note that in this case the link may not have user friendly display (in case of long links). 
+ Redirect via Smart conditions 
+ You can direct user further in flow after Knowledge reply via buttons, quick replies, random redirect, but also using smart conditions depending on the user’s current state 💡 
+ For example, you can add some custom attribute to the first atom of the specific flow via Set attribute element 
+ The value will be assigned to the user after receiving atom and later can be used to redirect user to specific part of the flow when he triggers AI knowledge reply. 
+ To achieve this, you can add Smart redirect element to Knowledge reply atom after Text element 
+ User will be directed to next pre-defined atom after Knowledge reply based on his value of the custom attribute 
+
+ Related articles: 

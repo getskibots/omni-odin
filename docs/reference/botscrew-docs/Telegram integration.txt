@@ -1,0 +1,5 @@
+ Telegram integration Telegram integration Bot instance can be connected to the Telegram channel via the Integrations sub-tab of the Bot Settings tab of Enterprise Platform. Retrieve the Access token for your bot 
+ Find @BotFather in the Telegram and press "Start". Send command /newbot Provide bot’s name and username Copy access token 
+ Connect bot instance to Telegram 
+ Go to bot instance on the Enterprise Platform Go to the Bot settings tab Go to the Integrations subtab Expand Telegram section Insert your Access token in the “Access token” field 
+ Press “Connect” Click on the link to the chatbot in the message from BotFather Press “Start”. Now you are ready to chat with the bot 🔥 The bot is accessible via the https://t.me/bot’s_username link outside of the Telegram and via @bot’s_username inside of the Telegram. 

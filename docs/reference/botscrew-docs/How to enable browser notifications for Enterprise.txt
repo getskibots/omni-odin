@@ -1,0 +1,32 @@
+ How to enable browser notifications for Enterprise Platform? How to enable browser notifications for Enterprise Platform? 
+ For macOS devices 
+ Notifications are displayed at the top right corner of the screen by default 
+ Google Chrome 
+ Allow notifications for website in browser 
+ When you open website for the first time, allow notifications in the popup 
+
+ Go to Chrome Settings> Privacy and Security> Site settings and make sure that notifications and sound are allowed for the website. Here you can also change permissions. 
+
+ Allow notifications for Chrome in Mac> System Preferences> Notifications and customize them to your preferences 
+
+ Notifications are ready to use 💬 
+ Safari 
+ Allow notifications for website in browser 
+ When you open website for the first time, allow notifications in the popup 
+
+ Go to Safari> Preferences> Websites and make sure that notifications are allowed for the website. Here you can also change permissions. 
+
+ Allow notifications for Safari in Mac> System Preferences> Notifications 
+ Notifications are ready to use 💬 
+ For Windows devices 
+ Notifications are displayed at the bottom right corner of the screen by default 
+ Allow notifications for website in Chrome browser as described above 
+
+ Open Chrome, type the following chrome://flags/#enable-native-notifications in the address bar and press Enter Search for option “Enable system notifications” and select “Enabled” from the dropdown Relaunch Chrome Once you’ve completed the steps, web apps and websites you allowed will show pop up notifications and alerts in Action Center. 
+
+ Go to Windows Settings> System> Notifications Enable notifications for Google Chrome 
+
+ Customize notifications to your preferences 
+
+ Notifications are ready to use 💬 
+ More info about Windows 

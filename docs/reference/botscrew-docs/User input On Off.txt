@@ -1,0 +1,12 @@
+ User input On/Off User input On/Off 
+ Overview 
+ Text toggler is an atom builder element that provides the ability to disable or enable text input field in the widget anywhere in the flow. For example, you want users to navigate through your chatbot only using buttons/quick replies, but you have one specific place in the flow where you want to collect free feedback from the users. Here the ability to switch user input on/off can become handy. Let’s see how ⬇️ 
+ How to use text toggler? 
+ Go to the Flows tab Open Welcome message Click “Other” (3 dot icon) on the bottom panel and select “Text toggler” Switch toggler to the right (disable text input) and save atom Then go to the atom when you want to use “Save user input” element, add “Text toggler“ element as the first element in the atom and save atom Go to the next atom in the flow (”Feedback end” in this case); add “Text toggler” element and disable input 
+ Chatbot user experience 
+ When the user starts a conversation in the widget, the text input will be disabled for him 
+ Text input after the next atom will also be disabled automatically 
+ When the user receives an atom with enabled user input, the input state is updated automatically The user is able to send free text and after receiving a new atom, the input state is updated automatically again 
+
+ ← Previous topic Next topic → 
+ 

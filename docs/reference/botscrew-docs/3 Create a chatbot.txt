@@ -1,0 +1,4 @@
+ 3. Create a chatbot 3. Create a chatbot Introduction Create a chatbot Congratulations Introduction Follow this simple step-by-step guide to create a brand-new chatbot 🤖. Make sure that you are signed in. Create a chatbot Log into your Enterprise platform. On the Home page → tap on the 'Create a new bot' block. The home page tab on the Enterprise Platform Enter a chatbot name. Make sure it's unique. ' Create new chatbot' popup in Enterprise Platform 
+ Press the button “Create” to add a new chatbot to the Enterprise Platform. Congratulations Voilà! You are all set! 😉 Let's build chatbot flow . 
+ ← Previous topic Next topic → 
+ 

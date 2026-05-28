@@ -1,0 +1,6 @@
+ 1. Create a new account 1. Create a new account Introduction Step 1: Get an invitation Step 2: Register Congratulations! Introduction To start using Enterprise Platform, you need to create a new account. Step 1: Get an invitation To start, you need to have an invitation to Enterprise Platform. Ask your manager, co-worker, anyone who is already registered. They need to invite you within the platform. Step 2: Register Go to your mail inbox and open mail with your invitation. Click on 'Confirm & Register' button. It looks like this: 
+
+ Now, you’re on the 'Sign up' page. From here you can create your account. Type down your Full name together with a strong password. Memorize your password or keep it in a safe place. In case you lost your password or just forgot it, you can always reset your password . Once ready, click on the 'Sign up' button. 
+ Congratulations! Your account has been created, and you’re all set to sign in . 
+ ← Previous topic Next topic → 
+ 

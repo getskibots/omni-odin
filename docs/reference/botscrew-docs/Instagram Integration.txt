@@ -1,0 +1,6 @@
+ Instagram Integration Instagram Integration 
+
+ Currently bot instance can be connected to Instagram account only via manual setup. 
+ You can create new or use an existing Facebook page Go to https://business.facebook.com/latest/settings/pages 3. You will see all the Facebook pages related to your business, now select page you want to connect to Instagram account. If page not displayed in the list use “Add pages” option first. 
+
+ Go to the “Connected assets” section (if you do not have an Instagram account connected to the Facebook page, then you need to use “Connect assets” option first). Connected Instagram account should be displayed. Contact development team for further instructions. 

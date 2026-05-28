@@ -1,0 +1,38 @@
+ How to customize the widget? How to customize the widget? Appearance Welcome screen Greeting Integration Widget snippet attributes Related articles Appearance 
+ The Appearance section is used to configure the general appearance of the widget. 
+ Click on the picture for changing the logo of the widget bot and download a new one. 
+ The widget logo must be smaller than 200 kB. The optimum image size is 72px x 72px. A PNG with a transparent or white background works best. 
+
+ Click on the "Choose widget color" field for changing the color. 3. Choose any from the colors and click beside the popup. 
+
+ Enter widget name and placeholder text into respective fields. 
+
+ Toggle ‘Enable sound notifications’ serves to switch on and off the sound of incoming messages for widget chatbot users. Toggle ‘Show pop-up message preview’ serves to switch on and off the display of incoming messages on the preview for widget chatbot users. Toggle ‘Ask for rating after the conversation ends’ serves to switch on and off the display of the ‘Feedback’ pop-up for widget chatbot users. 
+ Welcome screen 
+ Click on the "Welcome screen" subtab. The tab is opened. Leave checkmarks in front of the fields you want to be displayed on the Welcome screen. You can unmark all fields and the welcome screen will not be present in the widget. 
+
+ Provide Welcome title, Welcome subtitle, and Start label in the corresponding fields. To configure the welcome screen in a different language, select language from the dropdown at the top of the page and provide translations. Language can be added at ‘Bot Settings’ → ‘Languages’. Static texts, such as ‘Start’ will be translated automatically. Greeting 
+ The Greeting section used to setup Widget greeting pop-up message 
+ Click on the "Greeting" subtab. Tab is opened with Default greeting that has text ‘Hey there! Ready to start a journey?’ and 5 sec delay 
+
+ Click ‘+Add Greeting’. Add greeting popup is opened. 
+ Provide greeting name. Select attribute for the desired condition from the Select attribute dropdown. 
+
+ Select logical operator between attribute and value for the desired condition 
+ Select or provide value for the desired condition 
+
+ Click ‘Customization’. Provide Greeting text. Select delay time or enter custom value in seconds. Select start atom from the dropdown. The atom will be sen instead of Welcome message to widget user that has clicked on default greeting popup. 
+ Press ‘Save’. 
+ Admin can edit, delete and disable custom popup. The number of sent and opened popups is also displayed in the Greeting subtab. Integration 
+ The integration section is used for the connecting widget to the URL-page: 
+ Click on the "Integration" sub-tab. Tab is opened. Copy generated widget code snippet (note that you can customise snippet by adding optional snippet attributes described in next block). Insert widget snippet into your website code before closing the /body> tag. 
+
+ Widget snippet attributes 
+ You can add different attributes to the widget snippet to change the position of the widget bubble on the webpage or to add a custom logo instead of the widget bubble. These settings can be managed via Google tag manager. 
+ Mandatory attributes: type - specifies the type of the script id - assigns an identifier to the <script> src - specifies the URL of an external script file data-server-url - specifies the API URL for the widget data-bot-id - specifies the widget bot id 
+ Optional attributes: data-icon-url - defines the widget bubble icon. URL (HTTPS) of a JPG, JPEG, or GIF. Example: data-icon-url=" https://thumbs.gfycat.com/CorruptScarceGroundbeetle-size_restricted.gif " Square images (100x100px) with transparent background work best. 
+ data-icon-scale - defines the coefficient of widget bubble resizing. Where, 1 - 100% (default) 1.3 - 130% 0.8 - 80% etc. Example: data-icon-scale='1.2’ 
+ data-icon-position - defines the position of the widget bubble on computers and tablets. data-icon-position= "{vertical position} {horizontal position} {vertical space} {horizontal space}" vertical position - bottom | top horizontal position - right | left vertical space - a number of % or px units horizontal space - a number of % or px units Example: data-icon-position="top left 10% 8%" data-icon-position="top left 50% 20px" data-icon-position="top left 20px 20px" 
+
+ Related articles 'Widget' tab How do I add a new language to the bot? Attributes 
+ 

@@ -1,0 +1,8 @@
+ Gallery and Attachment Gallery and Attachment 
+ Overview 
+ The Gallery is an atom builder element that provides the ability to display the carousel of options with images. Admin can add postback and URL buttons (up to 3 to each carousel element) and quick replies (up to 11) to the Gallery element. Each carousel element has an image, title, and subtitle. Admin can insert links and attributes into titles and subtitles. The Attachment is an atom builder element that provides the ability to display the image or a gif with quick replies. 
+ Add Gallery 
+ Open atom. Click ‘Gallery’ at the bottom of the atom builder. Click ‘Replace image’. Upload an image from your device. Add title/subtitle. Add postback button. Click the ‘+’ icon on the right. Add one more carousel element. Save atom. 
+ Add Attachment 
+ Open atom. Click ‘Attachment’ at the bottom of the atom builder. Click ‘Replace image’. Upload an image or a gif from your device. Add a quick reply. Save atom. 
+ ← Previous topic Next topic → 

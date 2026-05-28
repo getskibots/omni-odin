@@ -1,0 +1,4 @@
+ ‘Account settings’ page ‘Account settings’ page 
+ On the Account settings page of the Enterprise Platform, the user can set his availability, upload a profile picture, and edit the profile name. 
+ Go to the Homepage of the Enterprise Platform. In the top right corner click on the platform user’s name (you). Click ‘Account settings’. Click on the default logo and upload profile picture from the file manager. Update username. Press ‘Save’. Wait till the green success alert. 
+ When the platform user switches toggle ‘I am available’ on/off, admins see a green or grey dot in the Users subtab of the Bot Settings tab. 

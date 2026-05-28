@@ -1,0 +1,4 @@
+ 2. Sign in 2. Sign in Introduction Step 1: Open platform Step 2: Sign in Congratulations Introduction To start using Enterprise Platform you need to sign in to the platform. Before that, make sure that you have successfully created a new account . Step 1: Open platform Open Enterprise Platform in your web browser. Step 2: Sign in Now, you’re on the 'Sign in' page. From here you can enter your credentials. Type down your email and password. In case you lost your password or just forgot it, you can always reset your password . Click the 'Sign in' button. 
+ Congratulations Your are successfully signed in, and you’re all set to create your first chatbot ! 
+ ← Previous topic Next topic → 
+ 

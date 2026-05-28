@@ -1,0 +1,21 @@
+ Messages Messages Overview 
+ Text is an atom builder element that provides the ability to add text messages to the atom in the atom builder. 
+ Admin is able to add up to 10 text variants for one message that will be sent randomly to the chatbot user. 
+ Admin is also able to add multiple messages to one atom. 
+ Add text messages to the atom 
+ Open atom in the ‘Flows’ tab. Click ‘Text’ at the bottom of the atom builder. 
+
+ Enter text in the text field. Press ‘Save’. In case you have added additional languages to the bot, open the language selector, select a language from the list, update text according to the selected language, and press ‘Save’. You can make text look bold in the widget by enclosing it into **. 
+ Insert attribute into text 
+ Click on the text field. Enter ‘{{’. Select an attribute from the list OR enter a new unique {{attribute_name}}. 
+
+ Insert link into a text 
+ Click on the text field. Enter link name. Highlight the link name and click on the link icon that has appeared on the text element. Enter the link in the URL field on the ‘Insert link’ popup. Mark checkbox ‘Open in Widget’ in case you want the link to open inside the webview. Press ‘Create’. Press ‘Save’. 
+
+ Widget users will see the link as a hyperlink in the text. 
+ Add Reactions 
+ You have ability to add reactions to your text messages in atom builder. Hover over the top right corner of the message element and click. Reaction for message will be added below. Reaction will be displayed for the widget user as following: 
+
+ Reactions can also be added to Attachment and Gallery elements 
+ ← Previous topic Next topic → Related articles: Attributes How to add attributes to the chatbot flow? 
+ 

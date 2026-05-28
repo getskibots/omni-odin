@@ -1,0 +1,14 @@
+ 4. Build a chatbot flow 4. Build a chatbot flow Introduction Step 1: Open chatbot Flows tab Step 2: Create Welcome message Step 3: Create new Flow and Atom Step 4: Connect two Atoms Congratulations! Introduction In this section, we will learn how to create a simple chatbot on the Enterprise Platform. In just 10 minutes you will learn the general principles of building a chatbot. Step 1: Open chatbot Flows tab 
+ Click on the chatbot in the Admin Panel. 
+
+ Click on 'Flows' tab. Great! Now you are in the Flows tab. Here you can draw up your chatbot's conversation map. To know more about the structure of this tab, check the 'Flows' tab guide . 
+ Step 2: Create Welcome message Firstly, let's build a welcome message for the chatbot. Welcome message is the initial message that will welcome users. It is automatically added to the chatbot and cannot be deleted. It is located in 'Basic chatbot configurations' flow. Find it and click on it. 
+
+ After you click on the welcome message, platform opens atom builder on the right side of the screen. Atom builder - panel where you can edit the structure of the atom. 
+
+ Inside the atom builder you can create the structure of the atom. You can add different types of the chatbot elements (text message, gallery, attachment etc.). For now, let's add a simple greeting text message by filling in the text message that was automatically created. 
+
+ Click 'Save' to save the changes you made. Step 3: Create new Flow and Atom To create a new flow, click on the 'Add new flow' button. 
+ Enter the name of the flow (make sure it's unique). Click on 'Create' to finish. Create an atom inside the newly created flow by clicking on '+Add new atom' button. Enter the name of the atom. Click on 'Create' to finish. Open the atom builder of the 'Ending Atom' and create an ending message for this atom. Click 'Save' to save the changes. Step 4: Connect two Atoms Open welcome message atom. In this atom you need to add 'Quick reply' that will redirect chatbot user to the 'Ending Atom'. To do so, click on the '+Add quick reply' button. 
+ This button will expand to the two fields. Enter here the quick reply name ('Show Password') and select redirect atom ('Ending Atom') that will be sent to the chatbot user after he clicks on the quick reply. Click 'Save' to save the changes. Congratulations! You have created your first chatbot, which will help you not to forget your WiFi password😉. We need to make sure that the chatbot is working properly, so the next step is to test the chatbot . 
+ ← Previous topic Next topic → 

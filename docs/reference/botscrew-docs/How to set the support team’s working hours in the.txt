@@ -1,0 +1,9 @@
+ How to set the support team’s working hours in the chatbot? How to set the support team’s working hours in the chatbot? 
+ Introduction 
+ ‘Team hours’ subtab of the ‘Bot Settings’ tab provides ability to set working hours and days for your customer support team and the timezone for your chatbot. The timezone is UTC by default. Team is online 24/7 by default. If a chatbot user has made a support request during the team’s non-working hours they receive: ‘Sorry, we’re offline right now. Leave your email and we'll contact you as soon as our managers are online.' Set working hours 
+ Go to Team Hours subtab of the Bot Settings tab of Enterprise Platform. 
+
+ Select timezone from the timezone dropdown. Select option ‘Set up working days and hours’. Select ‘Weekends’ or ‘Weekdays’ as working days. Select working hours from the dropdown. Press ‘Save’. 
+
+ Admin is able to update texts of Offline flow atoms in the ‘Flows’ tab → ‘Basic chatbot configurations’ flow. Related articles: 'Support' tab 
+ 

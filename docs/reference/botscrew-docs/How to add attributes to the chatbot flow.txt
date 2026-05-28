@@ -1,0 +1,12 @@
+ How to add attributes to the chatbot flow? How to add attributes to the chatbot flow? Chatbot attributes 
+ Step 1. Create attribute 
+ Go to the "Bot Settings" tab, and open the "Manage attributes" modal on the "General" sub-tab. Press "+Add attribute" and enter the attribute name and default value if you want. Default value can be set for each language separately (use language dropdown in the view). Press "Save" Congratulations! The attribute has been added successfully! Step 2. Insert attribute into atom elements in atom builder 
+ Go to the Flows tab and open atom in atom builder. Go to the Flows tab and open atom in atom builder. Enter "{{" into text field. Select a newly created attribute from the attribute popup and insert it into the text. Or you can enter a unique attribute name inside the curly braces and a new attribute with be created automatically. 
+
+ To insert attribute into button/QR click on the button/QR in the atom builder and press "+Set attribute", then select it from the list of attributes. Or you can enter a unique attribute name into the "Attribute name" field and a new attribute will be created automatically. Enter a custom value into the "Value" field. 
+
+ To insert an attribute into the "Set attribute" element/"Save user input" element/"Smart redirect element click on the "Attribute name" field and select it from the list of attributes. Or you can enter a unique attribute name into the "Attribute name" field and a new attribute will be created automatically. 
+
+ System attributes 
+ System attributes such as Widget, Facebook, Whatsapp, and Twilio attributes can be inserted into text components and the "Smart redirect" element in atom builder the same way as chatbot attributes. 
+ Related topics: Attributes 

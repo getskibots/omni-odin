@@ -1,0 +1,5 @@
+ WitAi integration WitAi integration WitAi is a natural language interface for applications capable of turning sentences into structured data. In the Enterprise platform, WitAi is being used to support languages (i.e. Arabic) that are not supported by DialogFlow. 
+ Go to the Bot Settings tab> Integrations> WitAi section Expand section Press ‘Connect’ Wait till the green success alert The button has been updated to ‘Connected’ 
+ Now you are ready to add content to the NLP tab! Note that training of the WitAi app may take up to a few hours. 
+
+ Related articles: What is NLP 'NLP' tab How to add and edit an FAQ? 

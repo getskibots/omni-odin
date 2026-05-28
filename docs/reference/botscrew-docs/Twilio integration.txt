@@ -1,0 +1,11 @@
+ Twilio integration Twilio integration The Twilio integration is available for the bot instances created on the platform in test and production modes. In order to connect the bot instance to the SMS channel, you need to provide an Account SID, Auth Token, and business phone number in the Twilio section in the Integration sub-tab of the Settings tab of the platform. Test mode 
+ Setup Twilio account Log in and go to https://www.twilio.com/console . Copy Account SID and Auth Token. 
+
+ Go to bot instance on platform> Bot Settings> Integrations> Twilio> Paste Account SID into “Account SID” field and paste Auth token into “Account access token” field. Go to “Phone numbers”>” Manage”>” Active numbers” in the Twilio console. Copy the number from the list of active numbers. That will be the bot's sandbox number. 
+
+ Paste the phone number into the “Bot’s phone number“ field in the Twilio Integration section on Enterprise Platform. Click on the phone number in Twilio> scroll down to Messaging section. Enter webhook URL: platform_address/api/twilio/event/bot_id. 
+
+ Press "Save". Press “Connect” in Twilio Integration section on Enterprise Platform. The status should be updated to “Connected”. 
+ Add the phone number that is supposed to be used as the "To" number during testing to the "Verified caller IDs" in Twilio. Start a new conversation: send “hi” to your bot’s sandbox number from the phone number added to "Verified caller IDs" (using Open Phone). If the bot flow is not specifically configured yet, it should reply with a Default reply. 
+ Now you are ready to test your chatbot! Don't forget to regularly recharge the phone number on Twilio 😉 Production mode 
+ Setup a Twilio account if you don’t have one. Buy a new phone number. Connect the number to the bot instance as described above. Release phone number according to the Twilio procedure. 

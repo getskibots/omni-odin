@@ -1,0 +1,3 @@
+ 'Widget' tab 'Widget' tab Main Features Related articles Main Features This is the tab where you can: customize your widget to match your brand colors and add logo, enable sound notifications and pop-ups, adjust the welcome screen, setup widget greetings, and integrate a widget with your website: Copy widget snipper from the Integration sub-tab and p aste the code right before the closing body tag of every page where you want the chatbot widget to appear. 
+ Related articles How to customize the widget? 
+ 

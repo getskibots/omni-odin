@@ -1,0 +1,11 @@
+ How to add a tag to an atom How to add a tag to an atom Overview 
+ Tag is an atom builder element that provides the ability to send broadcasts to the different groups of chatbot users depending on the tags they received. 
+ Add a tag to atom 
+ Got the Flows tab. Create an atom with content. Click ‘Other’ at the bottom of the Atom builder. Select ‘Add tags’ on the ‘Add an action’ popup Select a tag from the dropdown or click ‘Create new tag’. 
+ Enter tag name. 
+
+ Press ‘Create’ Select a recently created tag from the dropdown. 
+ Save atom 
+ Chatbot user that received an atom with a tag is now marked with that tag. The tag can be selected during the broadcast creation and only users that received a tag during a conversation with the chatbot will receive the broadcast. 
+ Related articles How to create a broadcast? 
+ 

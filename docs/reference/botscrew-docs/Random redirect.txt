@@ -1,0 +1,8 @@
+ Random redirect Random redirect 
+ Overview 
+ Random redirect is an atom builder element that provides the ability to send different atoms randomly when a user reaches the same point of the flow. This helps you to diversify your flow. 
+ Add random redirect to atom 
+ Got the Flows tab. Create atom. Click ‘Other’ at the bottom of the Atom builder. Select ‘Random redirect’ on the ‘Add an action’ popup Set toggle ‘First-time redirect’ to ‘ON’. Select atom for first-time redirect from the drop down. Select atoms for further next redirects from the dropdown. Save atom 
+ Chatbot user will receive an atom set as ‘First-time redirect’ when he reaches an atom with random redirect for the first time; next time he will receive atoms set as ‘Random atoms’ in random order. 
+ In case of toggle ‘First-time redirect’ is switched off, the user will receive atoms set as random from the start. 
+ ← Previous topic Next topic → 

@@ -1,0 +1,15 @@
+ How to transfer chatbot’s content between bots? How to transfer chatbot’s content between bots? Introduction 
+ The export/Import feature provides the ability to transfer content between environments or between bots in the same environment without the developer’s support. You can find it in the Content version section of the General subtab in the Bot Settings tab. 
+ Export chatbot 
+ The newly created bot has a section “Content version” in the General subtab of the Bot settings tab with a version name that is {{chatbot_name}} 1.0 by default, timestamp of bot creation (Last uploaded) and name of admin who created bot (Uploaded by). When admin user clicks on download icon {{chatbot_name_1.0}} .zip file is being downloaded to device. The size of the file is limited to 100 MB. 
+
+ When the admin user unarchives the file the “tmp” folder is being extracted. 
+
+ “tmp” folder contains bot attachments (images and gifs) and the botContent.json file. 
+ The admin can insert “contentVersion” : “ version “ string into JSON file. After adding “contentVersion”, the new “tmp” folder should be created from updated botContent.json file and extracted attachments. The folder should be compressed to a .zip file. Data that is being exported: Flows tab: all content; NLP tab: FAQs, intents, triggers; Bot settings tab: bot name, languages, attributes, bot timezone, team hours, main menu; Widget tab: all widget settings. Import chatbot 
+ Go to Content version section of the Settings tab. Press ‘Upload new version’. Select zip file from the file manager. Press ‘Update’ on the popup. Wait till the green success alert is displayed. 
+ In case import was successful, the ‘Version name’, ‘Last uploaded’ and ‘Uploaded by’ fields are being updated in the Content version section . 
+ ☝🏽Note! After the import of the new version, the previous bot content is permanently deleted. Create a dump before updating! 
+ To import NLP from one bot to another, the latter should have required NLP providers connected (Dialogflow, WitAi), otherwise, the error notification is displayed. 
+ To create a copy of the bot content without NLP you can use the ‘Clone bot’ feature. Related articles How to clone a chatbot? 
+ 
