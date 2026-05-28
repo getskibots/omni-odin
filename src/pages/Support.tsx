@@ -1,15 +1,32 @@
 import { useMemo, useState } from 'react';
-import { User, Phone, MessageCircle, Mail } from 'lucide-react';
+import { User, Phone, MessageCircle, Mail, Send, Paperclip, UserPlus, Check, Headphones } from 'lucide-react';
 import {
   conversations,
   type AttentionFlag,
   type Channel,
   type Conversation,
-  type Message,
 } from '../data/conversations';
 
 type ChannelFilter = 'all' | Channel;
 type AttentionFilter = 'all' | 'needs-attention';
+
+/**
+ * Display-message type widens the data model's `from` to include 'support' —
+ * the human agent's messages once they take over a chat. Maps to BotScrew's
+ * `sender_type: SUPPORT` / `is_from_support: true`.
+ */
+type ChatSender = 'bot' | 'user' | 'support';
+interface DisplayMessage {
+  from: ChatSender;
+  text: string;
+  time: string;
+  toolCall?: { name: string; failed?: boolean };
+  audioDuration?: string;
+}
+
+function nowLabel(): string {
+  return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
 
 export default function Support() {
   const [channelFilter, setChannelFilter] = useState<ChannelFilter>('all');
@@ -123,7 +140,9 @@ export default function Support() {
 
         <section className="overflow-y-auto bg-slate-50">
           {selected ? (
-            <ConversationPane conv={selected} linked={linked} />
+            // key={selected.id} remounts the pane per conversation so the
+            // local takeover state (assigned / agent messages) resets cleanly.
+            <ConversationPane key={selected.id} conv={selected} linked={linked} />
           ) : (
             <div className="p-8 text-sm text-slate-400">Select a conversation.</div>
           )}
@@ -294,65 +313,176 @@ function ConversationPane({
   conv: Conversation;
   linked?: Conversation[];
 }) {
+  // --- Live agent takeover state (demo / local-only) ----------------------
+  // Maps to BotScrew's support handoff state machine:
+  //   assigned         → current_request_status: 'assigned' + admin_id set
+  //   agent messages   → sender_type: 'SUPPORT' / is_from_support: true
+  //   taking over      → user_bot: false (bot paused)
+  // In production these actions POST to BotScrew's API. Here they're local.
+  const isChat = conv.channel === 'chat';
+  const [assigned, setAssigned] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [agentMessages, setAgentMessages] = useState<DisplayMessage[]>([]);
+
+  const sendAgentMessage = () => {
+    const text = draft.trim();
+    if (!text) return;
+    setAgentMessages((prev) => [...prev, { from: 'support', text, time: nowLabel() }]);
+    setDraft('');
+  };
+
+  // Merge seeded conversation messages with locally-sent agent messages.
+  const allMessages: DisplayMessage[] = [...conv.messages, ...agentMessages];
+
   return (
-    <div className="px-8 py-6">
-      <header className="bg-white border border-slate-200 rounded-xl p-4 mb-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <ChannelBadge channel={conv.channel} connector={conv.connector} />
-              {conv.flags.map((f) => (
-                <AttentionPill key={f} flag={f} />
-              ))}
+    <div className="flex flex-col h-full">
+      {/* Scrollable conversation area */}
+      <div className="flex-1 overflow-y-auto px-8 py-6">
+        <header className="bg-white border border-slate-200 rounded-xl p-4 mb-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <ChannelBadge channel={conv.channel} connector={conv.connector} />
+                {conv.flags.map((f) => (
+                  <AttentionPill key={f} flag={f} />
+                ))}
+                {assigned && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border bg-success/10 text-success border-success/30">
+                    <Headphones className="h-3 w-3" strokeWidth={2} />
+                    Assigned to you
+                  </span>
+                )}
+              </div>
+              <h2 className="text-base font-semibold text-ink-900">{conv.identityLabel}</h2>
+              {conv.identitySub && (
+                <div className="text-xs text-slate-500 mt-0.5">{conv.identitySub}</div>
+              )}
+              {conv.subject && (
+                <div className="text-sm font-medium text-ink-900 mt-2">{conv.subject}</div>
+              )}
             </div>
-            <h2 className="text-base font-semibold text-ink-900">{conv.identityLabel}</h2>
-            {conv.identitySub && (
-              <div className="text-xs text-slate-500 mt-0.5">{conv.identitySub}</div>
-            )}
-            {conv.subject && (
-              <div className="text-sm font-medium text-ink-900 mt-2">{conv.subject}</div>
-            )}
+            <div className="flex flex-col items-end gap-2">
+              <div className="text-right text-xs text-slate-400">
+                <div>{conv.time}</div>
+                {conv.callDuration && conv.callDuration !== '00:00' && (
+                  <div className="mt-1 font-mono text-slate-600">Duration {conv.callDuration}</div>
+                )}
+              </div>
+              {/* Assign / Close — chat only (live takeover) */}
+              {isChat &&
+                (assigned ? (
+                  <button
+                    onClick={() => setAssigned(false)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-300 rounded-md hover:bg-slate-50 text-slate-700"
+                  >
+                    <Check className="h-3.5 w-3.5" strokeWidth={2} />
+                    Close request
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setAssigned(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-action-500 hover:bg-action-600 text-white rounded-md"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" strokeWidth={2} />
+                    Assign to me
+                  </button>
+                ))}
+            </div>
           </div>
-          <div className="text-right text-xs text-slate-400">
-            <div>{conv.time}</div>
-            {conv.callDuration && conv.callDuration !== '00:00' && (
-              <div className="mt-1 font-mono text-slate-600">Duration {conv.callDuration}</div>
-            )}
-          </div>
-        </div>
-        {linked && linked.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-slate-100">
-            <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">
-              Related on other channels
+          {linked && linked.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-slate-100">
+              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">
+                Related on other channels
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {linked.map((l) => (
+                  <a
+                    key={l.id}
+                    href="#"
+                    className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border border-slate-200 bg-slate-50 hover:bg-white"
+                  >
+                    <ChannelBadge channel={l.channel} connector={l.connector} />
+                    <span className="text-slate-600">{l.subject ?? l.preview.slice(0, 40)}</span>
+                  </a>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {linked.map((l) => (
-                <a
-                  key={l.id}
-                  href="#"
-                  className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border border-slate-200 bg-slate-50 hover:bg-white"
-                >
-                  <ChannelBadge channel={l.channel} connector={l.connector} />
-                  <span className="text-slate-600">{l.subject ?? l.preview.slice(0, 40)}</span>
-                </a>
-              ))}
-            </div>
+          )}
+        </header>
+
+        {/* Takeover status banner */}
+        {isChat && assigned && (
+          <div className="mb-4 flex items-center gap-2 text-xs text-success bg-success/10 border border-success/20 rounded-md px-3 py-2">
+            <Headphones className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+            <span>You're handling this chat. The bot is paused — your replies go straight to the visitor.</span>
           </div>
         )}
-      </header>
 
-      {conv.messages.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-sm text-slate-500">
-          {conv.flags.includes('missed-call')
-            ? 'Caller hung up before connecting. No voicemail.'
-            : 'No messages yet.'}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {conv.channel === 'voice' && <AudioPlaceholder duration={conv.callDuration ?? '00:00'} />}
-          {conv.messages.map((m, i) => (
-            <MessageBubble key={i} message={m} channel={conv.channel} />
-          ))}
+        {allMessages.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-sm text-slate-500">
+            {conv.flags.includes('missed-call')
+              ? 'Caller hung up before connecting. No voicemail.'
+              : 'No messages yet.'}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {conv.channel === 'voice' && (
+              <AudioPlaceholder duration={conv.callDuration ?? '00:00'} />
+            )}
+            {allMessages.map((m, i) => (
+              <MessageBubble key={i} message={m} channel={conv.channel} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Composer — chat only. Active once assigned, otherwise prompts to take over. */}
+      {isChat && (
+        <div className="border-t border-slate-200 bg-white px-6 py-3">
+          {assigned ? (
+            <div className="flex items-center gap-2">
+              <button
+                className="text-slate-400 hover:text-ink-900 p-1.5 rounded-md hover:bg-slate-100"
+                title="Attach a file"
+              >
+                <Paperclip className="h-4 w-4" strokeWidth={2} />
+              </button>
+              <input
+                type="text"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendAgentMessage();
+                  }
+                }}
+                autoFocus
+                placeholder="Type a reply to the visitor…"
+                className="flex-1 text-sm px-3 py-2 border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-botscrew-400"
+              />
+              <button
+                onClick={sendAgentMessage}
+                disabled={!draft.trim()}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-botscrew-500 hover:bg-botscrew-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Send className="h-3.5 w-3.5" strokeWidth={2} /> Send
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs text-slate-500">
+                Assign this chat to yourself to jump in and reply to the visitor.
+              </span>
+              <button
+                onClick={() => setAssigned(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-action-500 hover:bg-action-600 text-white rounded-md shrink-0"
+              >
+                <UserPlus className="h-3.5 w-3.5" strokeWidth={2} />
+                Assign to me
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -376,7 +506,7 @@ function AudioPlaceholder({ duration }: { duration: string }) {
   );
 }
 
-function MessageBubble({ message, channel }: { message: Message; channel: Channel }) {
+function MessageBubble({ message, channel }: { message: DisplayMessage; channel: Channel }) {
   if (message.toolCall) {
     return (
       <div className="flex justify-center text-xs text-slate-500">
@@ -396,19 +526,30 @@ function MessageBubble({ message, channel }: { message: Message; channel: Channe
   }
 
   const isBot = message.from === 'bot';
+  const isSupport = message.from === 'support';
+  const isOutbound = isBot || isSupport; // both render on the right
   const isEmail = channel === 'email';
 
+  // Three styles: bot (blue), human agent (teal/green), visitor (white).
+  const bubbleStyle = isSupport
+    ? 'bg-teal-600 text-white rounded-br-sm'
+    : isBot
+      ? 'bg-botscrew-500 text-white rounded-br-sm'
+      : 'bg-white border border-slate-200 text-ink-900 rounded-bl-sm';
+
   return (
-    <div className={`flex ${isBot ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${
-          isBot
-            ? 'bg-botscrew-500 text-white rounded-br-sm'
-            : 'bg-white border border-slate-200 text-ink-900 rounded-bl-sm'
-        } ${isEmail ? 'whitespace-pre-wrap' : ''}`}
-      >
+    <div className={`flex ${isOutbound ? 'justify-end' : 'justify-start'}`}>
+      <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${bubbleStyle} ${isEmail ? 'whitespace-pre-wrap' : ''}`}>
+        {isSupport && (
+          <div className="flex items-center gap-1 text-[10px] font-semibold text-white/80 mb-0.5 uppercase tracking-wide">
+            <Headphones className="h-2.5 w-2.5" strokeWidth={2.5} />
+            Agent
+          </div>
+        )}
         <div className={`text-sm ${isEmail ? 'leading-relaxed' : ''}`}>{message.text}</div>
-        <div className={`text-[10px] mt-1 ${isBot ? 'text-white/70' : 'text-slate-400'} flex items-center gap-2`}>
+        <div
+          className={`text-[10px] mt-1 ${isOutbound ? 'text-white/70' : 'text-slate-400'} flex items-center gap-2`}
+        >
           <span>{message.time}</span>
           {message.audioDuration && <span className="font-mono">▶ {message.audioDuration}</span>}
         </div>
