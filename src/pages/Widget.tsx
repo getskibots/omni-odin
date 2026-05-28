@@ -1,13 +1,26 @@
 import { MessageSquare, Code2 } from 'lucide-react';
+import { chatChannel, mountainCollective } from '../data/seed';
 
+/**
+ * Widget — embed code + appearance shortcut to the Chat channel's web connector.
+ *
+ * Migrated to read the chat channel's botscrewBotId from the new model. UI
+ * unchanged from the omni original (per the brief: no redesign in this pass).
+ */
 export default function Widget() {
+  // Chat channel's BotScrew bot id, surfaced into the embed script.
+  // In the MC seed the channel isn't wired yet (botscrewBotId = null), so we
+  // show a placeholder so the embed snippet is still readable.
+  const botIdRaw = chatChannel?.botscrewBotId;
+  const botIdToken = botIdRaw != null ? `bs_${botIdRaw}` : 'bs_PLACEHOLDER';
+
   return (
     <div className="px-8 py-8 max-w-5xl">
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-ink-900">Widget</h1>
         <p className="text-sm text-slate-500 mt-1">
           Web chat widget appearance, welcome message, and embed code. The Widget is the Web
-          connector of the Chat channel.
+          connector of the Chat channel for {mountainCollective.displayName}.
         </p>
       </header>
 
@@ -38,7 +51,7 @@ export default function Widget() {
     var j = d.createElement(s);
     j.async = 1;
     j.src = 'https://cdn.getskibots.com/widget.js';
-    j.dataset.botId = 'bs_8721';
+    j.dataset.botId = '${botIdToken}';
     d.head.appendChild(j);
   })(window, document, 'script');
 </script>`}

@@ -1,4 +1,4 @@
-import { jacksonHole } from '../data/parent';
+import { mountainCollective } from '../data/seed';
 
 export default function TopBar() {
   return (
@@ -6,7 +6,7 @@ export default function TopBar() {
       <div className="text-sm text-slate-500">
         <span className="text-botscrew-500 hover:underline cursor-pointer">Home</span>
       </div>
-      <div className="text-base font-semibold text-ink-900">{jacksonHole.name}</div>
+      <div className="text-base font-semibold text-ink-900">{mountainCollective.displayName}</div>
       <div className="flex items-center gap-3">
         <button className="px-3 py-1.5 text-sm rounded-md bg-action-500 hover:bg-action-600 text-white">
           Test AI chat
