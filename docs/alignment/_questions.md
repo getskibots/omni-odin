@@ -90,37 +90,45 @@ dictionary's `RESOLVED` is doc drift. (Still worth a one-line confirm with Daria
 
 ---
 
-## ⚠️ Still open after the Botscrew docs (the real Daria asks)
+## ⚠️ O1 + O2 — ANSWERED by the Odin API (the reframe)
 
-The docs describe the **admin UI** and the **outbound** API-call atom. They do
-NOT answer two things that decide whether omni builds *against* Botscrew or only
-*alongside* it:
+**Update (2026-05-27): Found Odin's live API at `api.getodin.ai/openapi.json` —
+850 endpoints, full platform management + read API.** See
+`../reference/ODIN_API_SURFACE.md`. Both questions below are answered by an
+EXISTING API; the only gate is credential access. This collapses two big "please
+build us an API" asks into one small "please provision scoped Odin credentials"
+ask.
 
-### ⚠️ O1. Is AI-action / flow-trace data available in the conversation export/API?
+### ⚠️ O1. Conversation + trace data — Odin HAS it (gated on credentials)
 
-Odin tracks AI-action name, parameters, and `last_ai_action_result` at runtime
-(R4). But `BOTSCREW_DATA.md` shows the conversation **export** does not include
-these fields. The conversation-trace view (flow path + tool calls + success/fail
-inline with the transcript) needs them.
+Odin exposes:
+- `GET /project/{project_id}/chat/{chat_id}/all` — full transcript
+- `GET /project/{project_id}/agent-interactions/{message_id}` — **per-message
+  interaction detail** (the smart-routing trace the QA view needs — verify shape)
+- `GET /actions/result/{project_id}/{flow_run_id}` + `/status/...` — action results
+- `POST /analytics/chats/{project_id}/nlp_metrics_and_categories` — intent classes
+- `/analytics/chats/...` — metrics, feedback, token usage
 
-**Daria ask:** *"Can you expose, per message, which flow/atom was active, which
-AI action fired, its parameters, and `last_ai_action_result` — in the export or
-via an API? We want to QA the smart-routing layer the same way we review
-transcripts."*
+**Revised Daria ask:** *"Can we get scoped Odin API access to read our projects'
+chat history + agent-interactions + analytics?"* (not "please build an export").
 
-### ⚠️ O2. Is there an INBOUND management API (omni → Botscrew)?
+### ⚠️ O2. Inbound config management — Odin HAS it (gated on credentials)
 
-`API call.txt` is outbound only. No documented API for omni to PUSH agent config,
-KB content, prompts, or flow definitions INTO Botscrew. The admin SPA clearly
-calls *some* backend, but it's not published as an integration API.
+Odin exposes full CRUD for agents (`/agents/new|edit|clone|delete`), personality
+prompts (`/personality/*`), KB ingest (`/project/knowledge/add/*`, `/crawl-configs/*`,
+`/knowledgebase-settings/*`), actions (`/actions/save|delete|export`), and
+workflows (`/workflows/*`). omni-odin's Knowledge page maps directly onto these.
 
-**Consequence:** without this, omni-odin stays **editor-only** for config (manual
-copy-paste / hand-off to Botscrew's dev team). With it, omni becomes a true
-control surface.
+**Revised Daria ask:** *"Odin's API already supports reading/writing agent config,
+KB, actions, and workflows. Can you provision GSB scoped Odin API credentials
+(apiKey/apiSecret) for our projects so omni integrates directly?"*
 
-**Daria ask:** *"Do you offer an inbound API to programmatically read/write a
-bot's agent config, KB sources, prompts, and flow content — or is the dashboard
-the only write path?"*
+### The caveats (carry into the meeting — see ODIN_API_SURFACE.md for detail)
+
+1. Credentials are Botscrew's (bots live in their Odin project) — need them to provision scoped access.
+2. On-prem vs cloud: Odin runs on-prem in Botscrew's VPC (`SYSTEM_ARCHITECTURE.md`); `api.getodin.ai` is public cloud. Confirm the on-prem instance exposes the same API + GSB can reach it.
+3. Disintermediation tension: direct Odin access partially routes around Botscrew's wrapper. Frame collaboratively (omni = GSB admin over Odin; Botscrew keeps runtime/hosting/license/billing/telephony + doesn't have to build omni's features).
+4. Odin docs say a custom frontend over Odin is an intended use case (`ODIN_SUBSTRATE.md` §11) — the API surface proves it.
 
 ---
 
