@@ -7,6 +7,123 @@ Each entry includes context, the decision made (if any), and the follow-up neede
 
 ---
 
+## ✅ Resolved by the Botscrew product documentation (May 2026)
+
+We obtained Botscrew's official product help docs (66 pages, now in
+`../reference/botscrew-docs/`). This replaced a lot of inference with documented
+behavior. Findings:
+
+### ✅ R1. Odin IS the orchestration brain (confirmed in writing)
+
+`AI Actions.txt`: *"An AI Action is a specific function that can be triggered by
+**ODIN** based on user input."* No longer inference — Botscrew's own docs name
+Odin as the engine that interprets intent and triggers actions. Validates
+`../reference/ODIN_SUBSTRATE.md`.
+
+### ✅ R2. Two routing mechanisms (this is your "smart routing")
+
+- **AI Actions** (`AI Actions.txt`) — AI/intent-based. Odin interprets the user's
+  intent → triggers a named action → collects required parameters → fires the
+  action's atom → stores outcome in `last_ai_action_result`.
+- **Smart redirect** (`Smart redirect.txt`) — deterministic attribute branching
+  (operators: is / is not / greater / less / contains / is default; conjunctions
+  and/or; priority by list order; "Redirect to" vs "Default reply").
+
+Department routing uses BOTH. The human-handover branch is a Smart redirect on
+`current_request_status` + `is_in_working_hours`.
+
+### ✅ R3. Resort feeds = "API call" atoms → validates `CustomToolRef`
+
+`API call.txt`: the API-call atom defines an outbound HTTP request (GET/POST/PUT/
+DELETE), can send user attributes in the body, and maps the response into
+attributes or messages (incl. JSON-path response mapping). This is exactly how
+`get_lift_status` / `get_snow_report` are wired — confirming `model.ts::CustomToolRef`
+(endpoint / method / headers / body / response mapping) is substrate-accurate.
+
+**Important caveat:** the API-call atom is **outbound** (Botscrew → external).
+It is NOT an inbound API for omni to push config into Botscrew. See O2 below.
+
+### ✅ R4. AI Action shape maps 1:1 to our model
+
+| Botscrew AI Action | `model.ts` |
+|---|---|
+| AI action name | `CustomToolRef.name` |
+| "Description for AI" (when to trigger) | `CustomToolRef.description` |
+| Parameters (type / required / values) | `CustomToolRef.inputSchema` |
+| Atom to trigger (API call) | `CustomToolRef.endpoint` |
+| `last_ai_action_result` | the tool's output/result |
+
+No model refactor needed.
+
+### ✅ R5. Full support handoff state machine (`'Support' tab.txt`)
+
+`current_request_status`:
+- `open` — user enters support mode via "Online support (open request)" atom
+  (Human handover flow). **Bot stops replying** to the user.
+- `pending` — request made during non-working hours (`is_in_working_hours: false`).
+  **Bot keeps replying** until an agent picks up.
+- expired — no agent claimed within **20 min** → auto-transferred back to bot.
+- exit — user types **"back to bot"** or clicks any flow option → back to bot.
+- "request already exists" — new request while a prior one is unclosed → "already
+  recorded" message.
+
+Agent-side groupings (the triage rail): **Assigned to me** (green icon) ·
+**New requests** (clock icon if out-of-hours) · **Assigned** (other agents, black
+icon) · **Expired requests** · **Chatbot** (all bot convos) · **Solved requests**.
+
+Assignment mechanics: "Assign to me" / "Assign to…" (another agent) / "Reassign
+to me" / "Reassign to…". **Sending a message auto-assigns.** Close via "Close
+request" (+ optional end-message atom from dropdown). Disconnect case: if the
+user closes the widget, input disables ("User closed the chat…") and a **"Resolve
+request"** button appears. System event messages in the transcript: "Agent
+joined," "Agent left," "Conversation ended" (30 min inactive), "User ended the
+conversation." Attachments: agent can send images + .gif.
+
+→ This validates the agent-takeover demo (commit `ca1c9dc`) and gives the exact
+behavior to refine it toward. See follow-up T1 below.
+
+### ✅ R6. `SOLVED` vs `RESOLVED` — `SOLVED` is canonical for support groups
+
+The Support doc consistently uses "Solved requests" (not "Resolved"). Matches the
+observed export data in `BOTSCREW_DATA.md`. Treat `SOLVED` as canonical; the
+dictionary's `RESOLVED` is doc drift. (Still worth a one-line confirm with Daria.)
+
+---
+
+## ⚠️ Still open after the Botscrew docs (the real Daria asks)
+
+The docs describe the **admin UI** and the **outbound** API-call atom. They do
+NOT answer two things that decide whether omni builds *against* Botscrew or only
+*alongside* it:
+
+### ⚠️ O1. Is AI-action / flow-trace data available in the conversation export/API?
+
+Odin tracks AI-action name, parameters, and `last_ai_action_result` at runtime
+(R4). But `BOTSCREW_DATA.md` shows the conversation **export** does not include
+these fields. The conversation-trace view (flow path + tool calls + success/fail
+inline with the transcript) needs them.
+
+**Daria ask:** *"Can you expose, per message, which flow/atom was active, which
+AI action fired, its parameters, and `last_ai_action_result` — in the export or
+via an API? We want to QA the smart-routing layer the same way we review
+transcripts."*
+
+### ⚠️ O2. Is there an INBOUND management API (omni → Botscrew)?
+
+`API call.txt` is outbound only. No documented API for omni to PUSH agent config,
+KB content, prompts, or flow definitions INTO Botscrew. The admin SPA clearly
+calls *some* backend, but it's not published as an integration API.
+
+**Consequence:** without this, omni-odin stays **editor-only** for config (manual
+copy-paste / hand-off to Botscrew's dev team). With it, omni becomes a true
+control surface.
+
+**Daria ask:** *"Do you offer an inbound API to programmatically read/write a
+bot's agent config, KB sources, prompts, and flow content — or is the dashboard
+the only write path?"*
+
+---
+
 ## Data model refactor (first task)
 
 ### ❓ 1. Folder name remains `omni + odin` with spaces and `+`
@@ -231,17 +348,41 @@ and populate `botscrewBotId`.
 
 ---
 
+## Follow-up build tasks surfaced
+
+### T1. Refine the agent-takeover demo to match the real state machine
+
+The takeover demo (commit `ca1c9dc`) has "Assign to me" + "Close request" +
+agent message styling. R5 reveals the full behavior to align toward:
+- **"Assign to…"** (assign to another agent) + **"Reassign to me / …"**
+- **Sending a message auto-assigns** (no button needed)
+- **Disconnect case** → input disables + **"Resolve request"** button
+- **System event messages** in the transcript ("Agent joined," "Agent left,"
+  "Conversation ended" after 30 min, "User ended the conversation")
+- **Close with an end-message atom** picked from a dropdown
+- **Out-of-hours / pending** state styling (bot still replying)
+
+All UI-buildable now (demo/local). Real wiring needs O2 (inbound API) +
+real-time delivery to the visitor's widget.
+
+---
+
 ## Architectural questions to surface to BotScrew / Daria
 
-These come from the alignment doc and the data model design. Worth bundling
-into a future Botscrew conversation:
+The two headline asks are now **O1** and **O2** above (trace data in export;
+inbound management API). Bundle those with the remaining items below into the
+next Daria conversation:
 
-- **§F.8 Open questions for BotScrew** — Custom Tool registration, per-channel
-  toolkit selection, Workflow Manager wiring, per-tool auth, tool versioning,
-  whether existing GSB feeds are real Odin Custom Tools or prompt-stuffed text.
-- **`BOTSCREW_DATA.md` Open Questions §8** — runtime lifecycle, configuration
-  surface, API access, platform enum extensibility, `SOLVED` vs. `RESOLVED`
-  canonical, one-bot-multi-channel feasibility.
+- **O1 (headline)** — expose per-message flow/atom + AI-action name + parameters
+  + `last_ai_action_result` (for the conversation-trace view).
+- **O2 (headline)** — inbound API to read/write agent config, KB, prompts, flows.
+- **§F.8 (`OMNI_ODIN_ALIGNMENT.md`)** — Custom Tool registration, per-channel
+  toolkit selection, Workflow Manager wiring, per-tool auth, tool versioning.
+  *(R3/R4 partially answer this: tools = API-call atoms + AI Actions. Remaining:
+  per-channel toolkit selection + Workflow Manager equivalent.)*
+- **`BOTSCREW_DATA.md` §8** — runtime lifecycle precedence (prompt vs KB vs flows
+  vs actions), platform enum extensibility for `EMAIL`, one-bot-multi-channel
+  feasibility. *(`SOLVED` vs `RESOLVED` now resolved — see R6.)*
 - **`ODIN_SUBSTRATE.md` §1** — Are a resort's existing chat + voice bots
   *agents in one Odin project* (already sharing a KB) or *separate Odin
-  projects* (duplicated KB)? This determines unification effort per resort.
+  projects* (duplicated KB)? Determines unification effort per resort.
