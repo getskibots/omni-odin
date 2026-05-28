@@ -295,7 +295,7 @@ function ConversationPane({
   linked?: Conversation[];
 }) {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-5">
+    <div className="px-8 py-6">
       <header className="bg-white border border-slate-200 rounded-xl p-4 mb-4">
         <div className="flex items-start justify-between gap-3">
           <div>
