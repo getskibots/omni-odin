@@ -1,16 +1,31 @@
+/**
+ * LEGACY data layer.
+ *
+ * This file remains in place to support pages and components that have not yet
+ * been migrated to the substrate-aligned model in `src/data/model.ts` + the
+ * Mountain Collective seed in `src/data/seed.ts`.
+ *
+ * Current consumers still on this legacy layer:
+ *   - Knowledge.tsx + TemplateForm.tsx (deferred — page redesign task)
+ *   - The voice testing flow (DEFAULT_ELEVENLABS_AGENT_ID re-exported below)
+ *
+ * Newly-migrated consumers (read from seed.ts directly):
+ *   - SettingsChannels.tsx
+ *   - Widget.tsx
+ *
+ * Migration tracker: docs/alignment/_questions.md
+ */
+
 export type ChannelStatus = 'active' | 'not-connected';
 export type LayerId = 'parent' | 'chat' | 'voice' | 'email';
 
 /**
- * Per-resort ElevenLabs Conversational AI agent ID.
- *
- * Each resort gets its own agent (so we can override LLM, voice, system prompt
- * via the omni dashboard). This default ships with omni so the user never has
- * to paste it. Override via localStorage if testing a different agent.
- *
- * When omni gets a real backend, this moves to the resort config table.
+ * Per-resort ElevenLabs Conversational AI agent ID — re-exported from `seed.ts`
+ * so there's a single source of truth (the voice channel's `voiceAgentId` on
+ * the active resort). Voice integration in `lib/elevenLabsVoice.ts` continues
+ * to import from this path unchanged.
  */
-export const DEFAULT_ELEVENLABS_AGENT_ID = 'agent_4801ks9kyskcfgetyq0krbqj10cm';
+export { DEFAULT_ELEVENLABS_AGENT_ID } from './seed';
 
 export interface VoiceStack {
   model: string;
