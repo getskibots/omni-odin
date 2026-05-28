@@ -163,6 +163,58 @@ position than "hand specs to Botscrew's devs and wait."
 
 ---
 
+## 📧 Email finding — Odin HAS an M365 email toolkit, but not as a support inbox
+
+**Important nuance (corrects an initial API-only read):** searching the API *paths*
+turns up no `/integrations/microsoft/mail` REST endpoints — but that's because
+Odin's M365 email capabilities are **agent toolkit *tools***, not REST endpoints.
+They're invoked by an agent during a conversation and configured through the
+generic toolkit-OAuth framework (`/admin/toolkits/{name}/oauth`,
+`/user/integrations/{service}/login`, `/oauth/services`,
+`/integrations/oauth/exchange`). So they don't appear as dedicated paths.
+
+Source: Odin docs — `learn.getodin.ai/agents/external-integrations/microsoft-365.md`.
+
+### What Odin's M365 toolkit does (full-featured)
+- **Email tools:** Search · Send · Reply (threaded) · Forward · Get Content ·
+  Create Draft · Download Attachment · Mark Read/Unread · Delete · Move
+- **Plus:** Calendar, OneDrive/SharePoint, Contacts
+- **OAuth:** Azure AD — Client ID + Secret + Tenant ID
+- **Scopes:** `Mail.ReadWrite`, `Mail.Send`, `Calendars.ReadWrite`,
+  `Files.ReadWrite.All`, `User.Read`, `Contacts.ReadWrite`
+
+So `ODIN_SUBSTRATE.md` §6 was right — Odin *can* do email.
+
+### …but two gaps make it wrong for an email SUPPORT inbox
+
+| Support-inbox requirement | Odin M365 toolkit | GSB connector (Sendy) |
+|---|---|---|
+| **Real-time inbound** (know the instant a guest replies) | ❌ no webhooks/subscriptions — would have to poll | ✅ Graph change-notification subscriptions (push) |
+| **Multi-tenant** (30 resorts, one app, per-resort consent) | ⚠️ "primarily per-user, service-account option" | ✅ multi-tenant Azure app by design |
+| **Ownership** | Odin/Botscrew's layer | ✅ GSB owns app + data |
+
+**The webhook gap is the dealbreaker.** A live support inbox needs the *instant* a
+guest emails; Odin's toolkit offers no subscriptions, so it'd require polling.
+
+### Verdict — own email, for a sharper reason than before
+GSB's own connector (multi-tenant Azure app + Graph + subscriptions + Supabase)
+remains the right choice for the email **support channel** — not because Odin
+can't do email, but because Odin's email toolkit lacks **real-time inbound** and
+clean **multi-tenancy**.
+
+Clean complementary split if ever wanted:
+- **Email support inbox** (inbound → AI draft → review/send) → **GSB connector** (real-time, multi-tenant)
+- **Agent-initiated outbound** (a chat/voice agent sends a confirmation mid-workflow) → **Odin's M365 toolkit**
+
+**Resulting omni-channel architecture:**
+```
+omni-odin (unified admin + Support inbox)
+  ├── Chat   ← Odin API  (/project/{id}/chat/...)        [once credentialed]
+  ├── Voice  ← Odin API  (/project/{id}/chat/... + /elevenlabs/*)
+  └── Email  ← GSB stack (Azure app + MS Graph + Supabase)  [owned, real-time]
+```
+omni-odin stitches Odin's chat/voice data + GSB's email data into one inbox.
+
 ## Source
 
 Full spec saved locally at `C:\Users\Brandon\Downloads\odin-openapi.json` (2.1 MB,
