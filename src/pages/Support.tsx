@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { User, Phone, MessageCircle, Mail } from 'lucide-react';
 import {
   conversations,
   type AttentionFlag,
@@ -104,7 +105,7 @@ export default function Support() {
         </div>
       </header>
 
-      <div className="flex-1 grid grid-cols-[360px_minmax(0,1fr)] min-h-0">
+      <div className="flex-1 grid grid-cols-[420px_minmax(0,1fr)] min-h-0">
         <aside className="border-r border-slate-200 bg-white overflow-y-auto">
           {filtered.length === 0 ? (
             <div className="p-8 text-center text-sm text-slate-400">No conversations match.</div>
@@ -178,6 +179,12 @@ function ConversationRow({
   selected: boolean;
   onClick: () => void;
 }) {
+  // Surface subject for email rows in the preview line; otherwise show preview.
+  // Identity sub (e.g. phone number, email address, return-caller note) goes
+  // on the second line under the name — matching Botscrew's row hierarchy.
+  const subline = conv.identitySub ?? '';
+  const previewLine = conv.subject ?? conv.preview;
+
   return (
     <button
       onClick={onClick}
@@ -186,30 +193,35 @@ function ConversationRow({
       }`}
     >
       <div className="flex items-start gap-3">
-        <div className="shrink-0 mt-0.5">
-          <ChannelBadge channel={conv.channel} connector={conv.connector} />
-        </div>
+        {/* Avatar with channel-icon overlay (matches Botscrew's pattern) */}
+        <RowAvatar channel={conv.channel} />
+
+        {/* Main content */}
         <div className="flex-1 min-w-0">
+          {/* Row 1: name (+ optional flag later) + date right-aligned */}
           <div className="flex items-center justify-between gap-2">
-            <div className="text-sm font-medium text-ink-900 truncate">{conv.identityLabel}</div>
+            <div className="text-[15px] font-medium text-ink-900 truncate">
+              {conv.identityLabel}
+            </div>
             <div className="text-xs text-slate-400 shrink-0">{conv.time}</div>
           </div>
-          {conv.identitySub && (
-            <div className="text-xs text-slate-500 truncate">{conv.identitySub}</div>
+
+          {/* Row 2: sub-identity (phone, email, return-caller note) */}
+          {subline && (
+            <div className="text-xs text-slate-500 truncate mt-0.5">{subline}</div>
           )}
-          {conv.subject && (
-            <div className="text-xs text-slate-600 font-medium truncate mt-0.5">
-              {conv.subject}
-            </div>
-          )}
-          <div className="text-xs text-slate-500 truncate mt-0.5">{conv.preview}</div>
+
+          {/* Row 3: preview / subject (single line) */}
+          <div className="text-[13px] text-slate-500 truncate mt-1">{previewLine}</div>
+
+          {/* Row 4: attention flags + large unread badge (Botscrew uses 24px+ circle) */}
           {(conv.flags.length > 0 || conv.unread > 0) && (
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-1.5 mt-2">
               {conv.flags.map((f) => (
                 <AttentionPill key={f} flag={f} />
               ))}
               {conv.unread > 0 && (
-                <span className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-semibold bg-botscrew-500 text-white">
+                <span className="ml-auto inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-semibold bg-botscrew-500 text-white">
                   {conv.unread}
                 </span>
               )}
@@ -218,6 +230,24 @@ function ConversationRow({
         </div>
       </div>
     </button>
+  );
+}
+
+/**
+ * Row avatar — silhouette in a circle with a small channel-icon badge in the
+ * bottom-right corner. Mirrors Botscrew's voice/chat row pattern.
+ */
+function RowAvatar({ channel }: { channel: Channel }) {
+  const Icon = channel === 'voice' ? Phone : channel === 'email' ? Mail : MessageCircle;
+  return (
+    <div className="shrink-0 relative">
+      <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+        <User className="h-5 w-5" strokeWidth={1.5} />
+      </div>
+      <div className="absolute -bottom-0.5 -right-0.5 h-[18px] w-[18px] rounded-full bg-botscrew-500 border-2 border-white flex items-center justify-center">
+        <Icon className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
+      </div>
+    </div>
   );
 }
 
